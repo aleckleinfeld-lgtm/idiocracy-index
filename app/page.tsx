@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Manrope } from "next/font/google";
 import {
   LineChart,
@@ -9,6 +9,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  ReferenceLine,
 } from "recharts";
 
 const manrope = Manrope({
@@ -80,23 +81,30 @@ export default function Page() {
 
   const positive = change !== null && change >= 0;
 
+  const baselineValue = useMemo(() => {
+    if (!data.length) return null;
+    const first = data[0]?.value;
+    return typeof first === "number" ? first : null;
+  }, [data]);
+
   return (
-    <div className={`${manrope.className} min-h-screen bg-[#0a0a0a] text-white`}>
-      <div className="mx-auto max-w-[1400px] px-6 py-8">
-        <h1 className="mb-1 text-[40px] font-extrabold tracking-[-0.03em]">
+    <div className={`${manrope.className} h-full w-full bg-[#0a0a0a] text-white`}>
+      <div className="h-full w-full px-[clamp(14px,2vw,24px)] py-[clamp(14px,1.8vw,22px)]">
+        <h1 className="mb-1 text-[clamp(24px,4vw,38px)] font-extrabold tracking-[-0.035em]">
           Idiocracy Index
         </h1>
-        <p className="mb-8 text-[15px] text-white/55">
-          A custom equal-weighted thematic index
+
+        <p className="mb-5 text-[clamp(12px,1.4vw,15px)] text-white/55">
+          A live index of the companies cashing in on convenience, consumption, and cultural decline.
         </p>
 
-        <div className="mb-6">
-          <div className="text-[56px] font-extrabold leading-none tracking-[-0.04em]">
+        <div className="mb-4">
+          <div className="text-[clamp(34px,5.6vw,54px)] font-extrabold leading-none tracking-[-0.045em]">
             {current !== null ? current.toFixed(2) : "—"}
           </div>
 
           <div
-            className={`mt-2 text-[15px] font-semibold ${
+            className={`mt-2 text-[clamp(12px,1.4vw,15px)] font-semibold ${
               change === null
                 ? "text-white/45"
                 : positive
@@ -117,7 +125,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="mb-6 flex flex-wrap gap-2">
+        <div className="mb-4 flex flex-wrap gap-2">
           {RANGE_OPTIONS.map((item) => {
             const active = range === item;
 
@@ -125,7 +133,7 @@ export default function Page() {
               <button
                 key={item}
                 onClick={() => setRange(item)}
-                className={`rounded-full px-4 py-1.5 text-[12px] font-semibold tracking-[0.01em] transition ${
+                className={`rounded-full px-[clamp(10px,1.6vw,15px)] py-[clamp(5px,0.9vw,7px)] text-[clamp(10px,1.1vw,12px)] font-semibold tracking-[0.01em] transition ${
                   active
                     ? "bg-white text-black"
                     : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
@@ -137,11 +145,21 @@ export default function Page() {
           })}
         </div>
 
-        <div className="h-[460px] w-full">
+        <div className="h-[clamp(240px,36vw,420px)] w-full min-w-0">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 16, right: 8, left: 0, bottom: 0 }}>
+            <LineChart data={data} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
               <XAxis dataKey="label" hide />
               <YAxis hide domain={["dataMin", "dataMax"]} />
+
+              {baselineValue !== null && (
+                <ReferenceLine
+                  y={baselineValue}
+                  stroke="rgba(255,255,255,0.14)"
+                  strokeDasharray="3 5"
+                  ifOverflow="extendDomain"
+                />
+              )}
+
               <Tooltip
                 cursor={false}
                 labelFormatter={(label: unknown) =>
@@ -185,7 +203,7 @@ export default function Page() {
           </ResponsiveContainer>
         </div>
 
-        <div className="mt-6 text-[12px] text-white/35">
+        <div className="mt-4 text-[clamp(10px,1vw,12px)] text-white/35">
           For informational and creative purposes only. Not investment advice.
         </div>
       </div>
