@@ -150,7 +150,7 @@ export default function EmbedPage() {
             </p>
 
             {/* VALUE + CHANGE INLINE */}
-            <div className="mt-[18px] flex items-end gap-[10px]">
+            <div className="mt-[10px] flex items-end gap-[10px]">
               <div className="text-[44px] font-medium leading-none">
                 {current !== null ? current.toFixed(2) : "—"}
               </div>
