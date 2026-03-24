@@ -32,13 +32,6 @@ type ApiResponse = {
 
 const RANGE_OPTIONS: RangeKey[] = ["1D", "1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
 
-function formatTooltipLabel(label: unknown) {
-  if (typeof label === "string" || typeof label === "number") {
-    return String(label);
-  }
-  return "";
-}
-
 export default function Page() {
   const [range, setRange] = useState<RangeKey>("6M");
   const [data, setData] = useState<Point[]>([]);
@@ -114,8 +107,7 @@ export default function Page() {
             {change !== null ? (
               <>
                 {positive ? "+" : ""}
-                {change.toFixed(2)}%&nbsp;
-                <span className="text-white/45">{range}</span>
+                {change.toFixed(2)}% <span className="text-white/45">{range}</span>
               </>
             ) : loading ? (
               "Loading..."
@@ -152,8 +144,15 @@ export default function Page() {
               <YAxis hide domain={["dataMin", "dataMax"]} />
               <Tooltip
                 cursor={false}
-                labelFormatter={formatTooltipLabel}
-                formatter={(value: number) => [value.toFixed(2), "Index"]}
+                labelFormatter={(label: unknown) =>
+                  typeof label === "string" || typeof label === "number"
+                    ? String(label)
+                    : ""
+                }
+                formatter={(value: unknown) => [
+                  typeof value === "number" ? value.toFixed(2) : "",
+                  "Index",
+                ]}
                 contentStyle={{
                   backgroundColor: "#101010",
                   border: "1px solid rgba(255,255,255,0.08)",
@@ -173,7 +172,7 @@ export default function Page() {
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke={positive ? "#22c55e" : "#22c55e"}
+                stroke="#22c55e"
                 strokeWidth={2.25}
                 dot={false}
                 activeDot={{ r: 0 }}
