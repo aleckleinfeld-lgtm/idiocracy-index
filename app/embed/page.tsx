@@ -83,68 +83,75 @@ export default function EmbedPage() {
 
   const baselineValue = useMemo(() => {
     if (!data.length) return null;
-    const first = data[0]?.value;
-    return typeof first === "number" ? first : null;
+    return data[0]?.value ?? null;
   }, [data]);
 
   return (
-    <div className={`${manrope.className} embed-shell bg-[#0a0a0a] text-white`}>
-      <div className="embed-inner">
-        <div className="embed-top">
-          <h1 className="embed-title">Idiocracy Index</h1>
-          <p className="embed-subtitle">
+    <div className={`${manrope.className} h-full w-full bg-[#0a0a0a] text-white`}>
+      <div className="flex h-full w-full flex-col px-[clamp(14px,2vw,22px)] py-[clamp(14px,2vw,20px)] gap-[10px]">
+
+        {/* HEADER */}
+        <div className="flex-shrink-0">
+          <h1 className="text-[clamp(22px,3.5vw,34px)] font-extrabold tracking-[-0.04em] leading-[0.95]">
+            Idiocracy Index
+          </h1>
+
+          <p className="mt-1 text-[clamp(11px,1.3vw,14px)] text-white/55 leading-tight">
             A live index of the companies cashing in on convenience, consumption, and cultural decline.
           </p>
+        </div>
 
-          <div className="embed-value-wrap">
-            <div className="embed-value">
-              {current !== null ? current.toFixed(2) : "—"}
-            </div>
-
-            <div
-              className={`embed-change ${
-                change === null
-                  ? "text-white/45"
-                  : positive
-                  ? "text-[#22c55e]"
-                  : "text-[#ef4444]"
-              }`}
-            >
-              {change !== null ? (
-                <>
-                  {positive ? "+" : ""}
-                  {change.toFixed(2)}% <span className="text-white/45">{range}</span>
-                </>
-              ) : loading ? (
-                "Loading..."
-              ) : (
-                "Unavailable"
-              )}
-            </div>
+        {/* VALUE */}
+        <div className="flex-shrink-0">
+          <div className="text-[clamp(30px,5vw,52px)] font-extrabold tracking-[-0.045em] leading-none">
+            {current !== null ? current.toFixed(2) : "—"}
           </div>
 
-          <div className="embed-ranges">
-            {RANGE_OPTIONS.map((item) => {
-              const active = range === item;
-
-              return (
-                <button
-                  key={item}
-                  onClick={() => setRange(item)}
-                  className={`embed-range-btn ${
-                    active
-                      ? "bg-white text-black"
-                      : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  {item}
-                </button>
-              );
-            })}
+          <div
+            className={`mt-1 text-[clamp(11px,1.3vw,14px)] font-semibold ${
+              change === null
+                ? "text-white/45"
+                : positive
+                ? "text-[#22c55e]"
+                : "text-[#ef4444]"
+            }`}
+          >
+            {change !== null ? (
+              <>
+                {positive ? "+" : ""}
+                {change.toFixed(2)}% <span className="text-white/45">{range}</span>
+              </>
+            ) : loading ? (
+              "Loading..."
+            ) : (
+              "Unavailable"
+            )}
           </div>
         </div>
 
-        <div className="embed-chart-wrap">
+        {/* RANGE BUTTONS */}
+        <div className="flex flex-wrap gap-2 flex-shrink-0">
+          {RANGE_OPTIONS.map((item) => {
+            const active = range === item;
+
+            return (
+              <button
+                key={item}
+                onClick={() => setRange(item)}
+                className={`rounded-full px-[clamp(10px,1.5vw,14px)] py-[5px] text-[clamp(10px,1vw,12px)] font-semibold transition ${
+                  active
+                    ? "bg-white text-black"
+                    : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {item}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* CHART */}
+        <div className="flex-1 min-h-0 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 6, right: 2, left: 0, bottom: 0 }}>
               <XAxis dataKey="label" hide />
@@ -153,9 +160,8 @@ export default function EmbedPage() {
               {baselineValue !== null && (
                 <ReferenceLine
                   y={baselineValue}
-                  stroke="rgba(255,255,255,0.14)"
+                  stroke="rgba(255,255,255,0.15)"
                   strokeDasharray="3 5"
-                  ifOverflow="extendDomain"
                 />
               )}
 
@@ -173,16 +179,8 @@ export default function EmbedPage() {
                 contentStyle={{
                   backgroundColor: "#101010",
                   border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: "12px",
-                  color: "#ffffff",
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
-                }}
-                labelStyle={{
-                  color: "rgba(255,255,255,0.5)",
-                  marginBottom: 6,
-                }}
-                itemStyle={{
-                  color: "#ffffff",
+                  borderRadius: "10px",
+                  color: "#fff",
                 }}
               />
 
@@ -192,15 +190,20 @@ export default function EmbedPage() {
                 stroke="#22c55e"
                 strokeWidth={2.25}
                 dot={false}
-                activeDot={{ r: 0 }}
                 isAnimationActive={false}
                 style={{
-                  filter: "drop-shadow(0 0 10px rgba(34,197,94,0.42))",
+                  filter: "drop-shadow(0 0 8px rgba(34,197,94,0.4))",
                 }}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
+
+        {/* DISCLAIMER */}
+        <div className="text-[clamp(10px,1vw,12px)] text-white/35 flex-shrink-0">
+          Not investment advice. For illustrative purposes only.
+        </div>
+
       </div>
     </div>
   );

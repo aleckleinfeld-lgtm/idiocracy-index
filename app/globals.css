@@ -167,3 +167,16 @@ body {
     font-size: 11px;
   }
 }
+
+.embed-footer {
+  flex: 0 0 auto;
+  font-size: clamp(10px, 1vw, 12px);
+  color: rgba(255,255,255,0.35);
+  margin-top: 6px;
+}
+
+@media (max-height: 420px) {
+  .embed-footer {
+    display: none;
+  }
+}
