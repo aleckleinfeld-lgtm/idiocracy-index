@@ -24,3 +24,146 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+html,
+body {
+  height: 100%;
+}
+
+.embed-shell {
+  height: 100%;
+  width: 100%;
+}
+
+.embed-inner {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(12px, 1.8vw, 20px);
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.embed-top {
+  flex: 0 0 auto;
+}
+
+.embed-title {
+  margin: 0 0 4px 0;
+  font-size: clamp(22px, 3.4vw, 34px);
+  line-height: 0.95;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.embed-subtitle {
+  margin: 0 0 12px 0;
+  color: rgba(255,255,255,0.55);
+  font-size: clamp(11px, 1.2vw, 14px);
+  line-height: 1.25;
+}
+
+.embed-value-wrap {
+  margin-bottom: 10px;
+}
+
+.embed-value {
+  font-size: clamp(32px, 5vw, 52px);
+  line-height: 0.95;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+}
+
+.embed-change {
+  margin-top: 6px;
+  font-size: clamp(11px, 1.2vw, 14px);
+  font-weight: 600;
+}
+
+.embed-ranges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.embed-range-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: clamp(10px, 1vw, 12px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.embed-chart-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+/* Medium-height embeds */
+@media (max-height: 520px) {
+  .embed-inner {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .embed-subtitle {
+    margin-bottom: 8px;
+  }
+
+  .embed-value-wrap {
+    margin-bottom: 8px;
+  }
+
+  .embed-ranges {
+    gap: 6px;
+  }
+
+  .embed-range-btn {
+    padding: 5px 10px;
+  }
+}
+
+/* Short embeds */
+@media (max-height: 430px) {
+  .embed-subtitle {
+    display: none;
+  }
+
+  .embed-value-wrap {
+    margin-bottom: 6px;
+  }
+
+  .embed-ranges {
+    gap: 5px;
+  }
+
+  .embed-range-btn {
+    padding: 4px 9px;
+    font-size: 10px;
+  }
+}
+
+/* Very short embeds */
+@media (max-height: 360px) {
+  .embed-inner {
+    padding: 10px;
+    gap: 6px;
+  }
+
+  .embed-title {
+    font-size: clamp(18px, 3vw, 24px);
+  }
+
+  .embed-value {
+    font-size: clamp(24px, 4vw, 34px);
+  }
+
+  .embed-change {
+    margin-top: 4px;
+    font-size: 11px;
+  }
+}
