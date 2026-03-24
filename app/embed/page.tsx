@@ -15,7 +15,7 @@ import {
 
 const manrope = Manrope({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
 });
 
 type RangeKey = "1D" | "1W" | "1M" | "3M" | "6M" | "YTD" | "1Y" | "ALL";
@@ -54,28 +54,29 @@ function TinyTooltip({
   return (
     <div
       style={{
-        background: "#0f0f10",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: 9,
-        padding: "8px 10px",
-        minWidth: 78,
-        boxShadow: "0 8px 24px rgba(0,0,0,0.28)",
+        background: "#ffffff",
+        border: "1px solid rgba(0,0,0,0.08)",
+        borderRadius: 8,
+        padding: "6px 8px",
+        minWidth: 68,
+        boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
       }}
     >
       <div
         style={{
           fontSize: 10,
-          color: "rgba(255,255,255,0.5)",
-          marginBottom: 3,
+          color: "rgba(0,0,0,0.45)",
+          marginBottom: 2,
           lineHeight: 1.1,
+          fontWeight: 500,
         }}
       >
         {label}
       </div>
       <div
         style={{
-          fontSize: 12,
-          fontWeight: 700,
+          fontSize: 11,
+          fontWeight: 600,
           color,
           lineHeight: 1.1,
         }}
@@ -137,9 +138,9 @@ export default function EmbedPage() {
   }, [range]);
 
   const positive = change !== null && change >= 0;
-  const lineColor = positive ? "#22c55e" : "#ef4444";
-  const gradientTop = positive ? "rgba(34,197,94,0.22)" : "rgba(239,68,68,0.20)";
-  const gradientBottom = positive ? "rgba(34,197,94,0.00)" : "rgba(239,68,68,0.00)";
+  const lineColor = positive ? "#16a34a" : "#dc2626";
+  const gradientTop = positive ? "rgba(22,163,74,0.14)" : "rgba(220,38,38,0.12)";
+  const gradientBottom = positive ? "rgba(22,163,74,0.00)" : "rgba(220,38,38,0.00)";
 
   const baselineValue = useMemo(() => {
     const firstReal = data.find((point) => typeof point.value === "number");
@@ -147,35 +148,33 @@ export default function EmbedPage() {
   }, [data]);
 
   return (
-    <div className={`${manrope.className} h-full w-full bg-[#0a0a0a] text-white`}>
-      <div className="flex h-full w-full flex-col gap-[8px] px-[clamp(12px,1.6vw,18px)] py-[clamp(12px,1.6vw,18px)]">
+    <div className={`${manrope.className} h-full w-full bg-white text-[#111111]`}>
+      <div className="flex h-full w-full flex-col gap-[8px] px-[clamp(12px,1.5vw,18px)] py-[clamp(12px,1.5vw,18px)]">
         <div className="flex-shrink-0">
-          <h1 className="text-[clamp(20px,2.9vw,30px)] font-extrabold tracking-[-0.04em] leading-[0.95]">
+          <h1 className="text-[clamp(18px,2.5vw,26px)] font-medium tracking-[-0.03em] leading-[1] text-[#111111]">
             Idiocracy Index
           </h1>
 
-          <p className="mt-1 text-[clamp(10px,1.05vw,12px)] text-white/55 leading-tight">
+          <p className="mt-1 text-[clamp(9px,1vw,11px)] font-medium text-black/45 leading-tight">
             A live index of the companies cashing in on convenience, consumption, and cultural decline.
           </p>
         </div>
 
         <div className="flex-shrink-0">
-          <div className="text-[clamp(28px,4.6vw,44px)] font-extrabold tracking-[-0.045em] leading-none">
+          <div className="text-[clamp(24px,3.8vw,34px)] font-medium tracking-[-0.03em] leading-none text-[#111111]">
             {current !== null ? current.toFixed(2) : "—"}
           </div>
 
           <div
-            className={`mt-1 text-[clamp(10px,1.05vw,12px)] font-semibold ${
-              change === null ? "text-white/45" : ""
-            }`}
+            className="mt-1 text-[clamp(9px,1vw,11px)] font-medium"
             style={{
-              color: change === null ? undefined : lineColor,
+              color: change === null ? "rgba(0,0,0,0.42)" : lineColor,
             }}
           >
             {change !== null ? (
               <>
                 {positive ? "+" : ""}
-                {change.toFixed(2)}% <span className="text-white/45">{range}</span>
+                {change.toFixed(2)}% <span className="text-black/35">{range}</span>
               </>
             ) : loading ? (
               "Loading..."
@@ -193,10 +192,10 @@ export default function EmbedPage() {
               <button
                 key={item}
                 onClick={() => setRange(item)}
-                className={`rounded-full px-[clamp(9px,1.2vw,12px)] py-[4px] text-[clamp(9px,0.9vw,11px)] font-semibold transition ${
+                className={`rounded-full px-[clamp(8px,1vw,11px)] py-[3px] text-[clamp(8px,0.85vw,10px)] font-medium transition ${
                   active
-                    ? "bg-white text-black"
-                    : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                    ? "bg-[#111111] text-white"
+                    : "bg-black/[0.04] text-black/55 hover:bg-black/[0.07] hover:text-black/80"
                 }`}
               >
                 {item}
@@ -221,8 +220,8 @@ export default function EmbedPage() {
               {baselineValue !== null && (
                 <ReferenceLine
                   y={baselineValue}
-                  stroke="rgba(255,255,255,0.14)"
-                  strokeDasharray="3 6"
+                  stroke="rgba(0,0,0,0.12)"
+                  strokeDasharray="3 5"
                 />
               )}
 
@@ -245,27 +244,22 @@ export default function EmbedPage() {
                 type="monotone"
                 dataKey="value"
                 stroke={lineColor}
-                strokeWidth={2.2}
+                strokeWidth={1.5}
                 dot={false}
                 activeDot={{
-                  r: 3.5,
+                  r: 3,
                   fill: lineColor,
                   stroke: "#ffffff",
-                  strokeWidth: 1.8,
+                  strokeWidth: 1.5,
                 }}
                 isAnimationActive={false}
                 connectNulls={false}
-                style={{
-                  filter: positive
-                    ? "drop-shadow(0 0 8px rgba(34,197,94,0.36))"
-                    : "drop-shadow(0 0 8px rgba(239,68,68,0.32))",
-                }}
               />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="flex-shrink-0 text-[clamp(9px,0.9vw,11px)] text-white/35">
+        <div className="flex-shrink-0 text-[clamp(8px,0.8vw,10px)] font-medium text-black/30">
           Not investment advice. For illustrative purposes only.
         </div>
       </div>
