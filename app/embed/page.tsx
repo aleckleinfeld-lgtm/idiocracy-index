@@ -57,15 +57,15 @@ function TinyTooltip({
         background: "#ffffff",
         border: "1px solid rgba(0,0,0,0.08)",
         borderRadius: 10,
-        padding: "8px 10px",
-        minWidth: 74,
+        padding: "7px 9px",
+        minWidth: 72,
         boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
       }}
     >
       <div
         style={{
-          fontSize: 11,
-          color: "rgba(0,0,0,0.45)",
+          fontSize: 10,
+          color: "rgba(0,0,0,0.42)",
           marginBottom: 3,
           fontWeight: 500,
           lineHeight: 1.1,
@@ -95,9 +95,9 @@ function countGreenRedDays(series: Point[]) {
     (p): p is Point & { value: number } => typeof p.value === "number"
   );
 
-  for (let i = 1; i < valid.length; i += 1) {
-    if (valid[i].value > valid[i - 1].value) green += 1;
-    else if (valid[i].value < valid[i - 1].value) red += 1;
+  for (let i = 1; i < valid.length; i++) {
+    if (valid[i].value > valid[i - 1].value) green++;
+    else if (valid[i].value < valid[i - 1].value) red++;
   }
 
   return { green, red };
@@ -194,7 +194,7 @@ export default function EmbedPage() {
 
   const positive = change !== null && change >= 0;
   const lineColor = positive ? "#16a34a" : "#dc2626";
-  const gradientTop = positive ? "rgba(22,163,74,0.12)" : "rgba(220,38,38,0.10)";
+  const gradientTop = positive ? "rgba(22,163,74,0.10)" : "rgba(220,38,38,0.08)";
   const gradientBottom = "rgba(0,0,0,0)";
 
   const baselineValue = useMemo(() => {
@@ -204,63 +204,64 @@ export default function EmbedPage() {
 
   return (
     <div className={`${manrope.className} h-full w-full bg-white text-[#111111]`}>
-      <div className="flex h-full flex-col gap-2 px-[16px] py-[16px]">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-[20px] font-medium tracking-tight">
+      <div className="flex h-full flex-col px-[18px] py-[18px]">
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex min-w-0 flex-col">
+            <h1 className="text-[18px] font-medium tracking-[-0.03em] leading-none">
               Idiocracy Index
             </h1>
-            <p className="mt-1 text-[10px] text-black/45">
+
+            <p className="mt-[10px] text-[9px] leading-[1.25] text-black/42">
               A live index of convenience, consumption, and decline.
             </p>
+
+            <div className="mt-[22px] text-[40px] font-medium tracking-[-0.04em] leading-none">
+              {current !== null ? current.toFixed(2) : "—"}
+            </div>
+
+            <div
+              className="mt-[8px] text-[10px] font-medium"
+              style={{
+                color: change === null ? "rgba(0,0,0,0.40)" : lineColor,
+              }}
+            >
+              {change !== null
+                ? `${change >= 0 ? "+" : ""}${change.toFixed(2)}% ${range}`
+                : loading
+                ? "Loading..."
+                : "—"}
+            </div>
+
+            <div className="mt-[18px] flex flex-wrap gap-[6px]">
+              {RANGE_OPTIONS.map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRange(r)}
+                  className={`rounded-full px-[10px] py-[4px] text-[9px] font-medium transition ${
+                    r === range
+                      ? "bg-black text-white"
+                      : "bg-black/5 text-black/55 hover:bg-black/8 hover:text-black/75"
+                  }`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="flex flex-col items-end leading-tight">
-            <div className="text-[14px] font-medium text-[#16a34a]">
+          <div className="flex shrink-0 flex-col items-end gap-[8px] pt-[2px]">
+            <div className="rounded-[10px] bg-[#16a34a] px-[10px] py-[6px] text-[11px] font-medium leading-none text-white">
               {greenDaysYTD ?? "—"} Green days
             </div>
-            <div className="mt-1 text-[14px] font-medium text-[#dc2626]">
+            <div className="rounded-[10px] bg-[#dc2626] px-[10px] py-[6px] text-[11px] font-medium leading-none text-white">
               {redDaysYTD ?? "—"} Red days
             </div>
           </div>
         </div>
 
-        <div>
-          <div className="text-[32px] font-medium">
-            {current !== null ? current.toFixed(2) : "—"}
-          </div>
-
-          <div
-            className="mt-1 text-[11px] font-medium"
-            style={{
-              color: change === null ? "rgba(0,0,0,0.4)" : lineColor,
-            }}
-          >
-            {change !== null
-              ? `${change >= 0 ? "+" : ""}${change.toFixed(2)}% ${range}`
-              : loading
-              ? "Loading..."
-              : "—"}
-          </div>
-        </div>
-
-        <div className="flex gap-1.5 flex-wrap">
-          {RANGE_OPTIONS.map((r) => (
-            <button
-              key={r}
-              onClick={() => setRange(r)}
-              className={`text-[10px] px-2 py-1 rounded-full font-medium ${
-                r === range ? "bg-black text-white" : "bg-black/5 text-black/60"
-              }`}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex-1 min-h-0">
+        <div className="mt-[18px] flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data} margin={{ top: 4, right: 2, left: 2, bottom: 0 }}>
+            <ComposedChart data={data} margin={{ top: 6, right: 2, left: 2, bottom: 0 }}>
               <defs>
                 <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={gradientTop} />
@@ -274,13 +275,13 @@ export default function EmbedPage() {
               {baselineValue !== null && (
                 <ReferenceLine
                   y={baselineValue}
-                  stroke="rgba(0,0,0,0.1)"
+                  stroke="rgba(0,0,0,0.10)"
                   strokeDasharray="3 5"
                 />
               )}
 
               <Tooltip
-                cursor={{ stroke: "rgba(0,0,0,0.15)", strokeWidth: 1 }}
+                cursor={{ stroke: "rgba(0,0,0,0.14)", strokeWidth: 1 }}
                 isAnimationActive={false}
                 content={<TinyTooltip color={lineColor} />}
               />
@@ -298,7 +299,7 @@ export default function EmbedPage() {
                 type="monotone"
                 dataKey="value"
                 stroke={lineColor}
-                strokeWidth={1.5}
+                strokeWidth={1.4}
                 dot={false}
                 activeDot={{
                   r: 3,
@@ -313,7 +314,7 @@ export default function EmbedPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="text-[9px] text-black/30">
+        <div className="mt-[10px] text-[9px] text-black/28">
           Not investment advice.
         </div>
       </div>
