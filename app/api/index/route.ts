@@ -31,8 +31,9 @@ type YahooPoint = {
 
 type SeriesPoint = {
   date: string;
-  value: number;
   label: string;
+  timestamp: number | null;
+  value: number | null;
 };
 
 function getYahooParams(range: RangeKey) {
@@ -65,6 +66,7 @@ function formatLabel(timestamp: number, range: RangeKey) {
     return date.toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
+      timeZone: "America/New_York",
     });
   }
 
@@ -73,6 +75,7 @@ function formatLabel(timestamp: number, range: RangeKey) {
       weekday: "short",
       month: "short",
       day: "numeric",
+      timeZone: "America/New_York",
     });
   }
 
@@ -80,6 +83,7 @@ function formatLabel(timestamp: number, range: RangeKey) {
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
+      timeZone: "America/New_York",
     });
   }
 
@@ -87,7 +91,47 @@ function formatLabel(timestamp: number, range: RangeKey) {
     month: "short",
     day: "numeric",
     year: range === "1Y" || range === "YTD" ? "2-digit" : undefined,
+    timeZone: "America/New_York",
   });
+}
+
+function getETTimeKey(timestamp: number) {
+  const date = new Date(timestamp * 1000);
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "America/New_York",
+  });
+}
+
+function buildMarketDaySlots() {
+  const slots: Array<{ key: string; label: string }> = [];
+
+  let hour = 9;
+  let minute = 30;
+
+  while (hour < 16 || (hour === 16 && minute === 0)) {
+    const key = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+
+    const display = new Date(`2026-01-01T${key}:00`).toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+
+    slots.push({
+      key,
+      label: display,
+    });
+
+    minute += 5;
+    if (minute >= 60) {
+      hour += 1;
+      minute -= 60;
+    }
+  }
+
+  return slots;
 }
 
 async function fetchTickerSeries(ticker: string, rangeKey: RangeKey): Promise<YahooPoint[]> {
@@ -149,7 +193,7 @@ function removeBadTail(points: SeriesPoint[]) {
     const last = cleaned[cleaned.length - 1].value;
     const prev = cleaned[cleaned.length - 2].value;
 
-    if (!Number.isFinite(last) || !Number.isFinite(prev) || prev === 0) {
+    if (typeof last !== "number" || typeof prev !== "number" || prev === 0) {
       cleaned.pop();
       continue;
     }
@@ -165,6 +209,29 @@ function removeBadTail(points: SeriesPoint[]) {
   }
 
   return cleaned;
+}
+
+function expandToFullDay(points: SeriesPoint[]) {
+  const slots = buildMarketDaySlots();
+
+  const pointMap = new Map<string, SeriesPoint>();
+
+  for (const point of points) {
+    if (typeof point.timestamp === "number") {
+      pointMap.set(getETTimeKey(point.timestamp), point);
+    }
+  }
+
+  return slots.map((slot) => {
+    const match = pointMap.get(slot.key);
+
+    return {
+      date: slot.label,
+      label: slot.label,
+      timestamp: match?.timestamp ?? null,
+      value: match?.value ?? null,
+    };
+  });
 }
 
 export async function GET(req: NextRequest) {
@@ -216,7 +283,7 @@ export async function GET(req: NextRequest) {
       return null;
     });
 
-    const series: SeriesPoint[] = commonTimestamps
+    const rawSeries: SeriesPoint[] = commonTimestamps
       .map((timestamp) => {
         let total = 0;
         let count = 0;
@@ -241,15 +308,16 @@ export async function GET(req: NextRequest) {
 
         return {
           date: new Date(timestamp * 1000).toISOString(),
-          value: (total / count) * 100,
           label: formatLabel(timestamp, range),
+          timestamp,
+          value: (total / count) * 100,
         };
       })
       .filter((point): point is SeriesPoint => point !== null);
 
-    const cleanedSeries = removeBadTail(series);
+    const cleanedActualSeries = removeBadTail(rawSeries);
 
-    if (cleanedSeries.length < 2) {
+    if (cleanedActualSeries.length < 2) {
       return NextResponse.json({
         series: [],
         current: null,
@@ -257,13 +325,21 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const current = cleanedSeries[cleanedSeries.length - 1].value;
-    const first = cleanedSeries[0].value;
-    const change = first !== 0 ? ((current - first) / first) * 100 : null;
+    const firstActual = cleanedActualSeries[0].value;
+    const currentActual = cleanedActualSeries[cleanedActualSeries.length - 1].value;
+    const change =
+      typeof firstActual === "number" &&
+      typeof currentActual === "number" &&
+      firstActual !== 0
+        ? ((currentActual - firstActual) / firstActual) * 100
+        : null;
+
+    const series =
+      range === "1D" ? expandToFullDay(cleanedActualSeries) : cleanedActualSeries;
 
     return NextResponse.json({
-      series: cleanedSeries,
-      current,
+      series,
+      current: currentActual,
       change,
     });
   } catch (error) {
