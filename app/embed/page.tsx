@@ -67,7 +67,6 @@ function TinyTooltip({
           fontSize: 10,
           color: "rgba(0,0,0,0.45)",
           marginBottom: 2,
-          lineHeight: 1.1,
           fontWeight: 500,
         }}
       >
@@ -78,7 +77,6 @@ function TinyTooltip({
           fontSize: 11,
           fontWeight: 600,
           color,
-          lineHeight: 1.1,
         }}
       >
         {value}
@@ -92,15 +90,12 @@ function countGreenRedDays(series: Point[]) {
   let red = 0;
 
   const valid = series.filter(
-    (point): point is Point & { value: number } => typeof point.value === "number"
+    (p): p is Point & { value: number } => typeof p.value === "number"
   );
 
-  for (let i = 1; i < valid.length; i += 1) {
-    const prev = valid[i - 1].value;
-    const curr = valid[i].value;
-
-    if (curr > prev) green += 1;
-    else if (curr < prev) red += 1;
+  for (let i = 1; i < valid.length; i++) {
+    if (valid[i].value > valid[i - 1].value) green++;
+    else if (valid[i].value < valid[i - 1].value) red++;
   }
 
   return { green, red };
@@ -111,226 +106,170 @@ export default function EmbedPage() {
   const [data, setData] = useState<Point[]>([]);
   const [current, setCurrent] = useState<number | null>(null);
   const [change, setChange] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
 
   const [greenDaysYTD, setGreenDaysYTD] = useState<number | null>(null);
   const [redDaysYTD, setRedDaysYTD] = useState<number | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    async function load() {
+      const res = await fetch(`/api/index?range=${range}`, { cache: "no-store" });
+      const json: ApiResponse = await res.json();
 
-    async function loadData() {
-      setLoading(true);
-
-      try {
-        const res = await fetch(`/api/index?range=${range}`, {
-          cache: "no-store",
-        });
-
-        const json: ApiResponse = await res.json();
-
-        if (!cancelled) {
-          setData(Array.isArray(json.series) ? json.series : []);
-          setCurrent(typeof json.current === "number" ? json.current : null);
-          setChange(typeof json.change === "number" ? json.change : null);
-        }
-      } catch (error) {
-        console.error("Failed to load index data:", error);
-
-        if (!cancelled) {
-          setData([]);
-          setCurrent(null);
-          setChange(null);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
+      setData(json.series || []);
+      setCurrent(json.current ?? null);
+      setChange(json.change ?? null);
     }
 
-    loadData();
-
-    const interval = window.setInterval(loadData, 60_000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(interval);
-    };
+    load();
+    const i = setInterval(load, 60000);
+    return () => clearInterval(i);
   }, [range]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function loadYTDStats() {
-      try {
-        const res = await fetch(`/api/index?range=YTD`, {
-          cache: "no-store",
-        });
-
-        const json: ApiResponse = await res.json();
-        const { green, red } = countGreenRedDays(Array.isArray(json.series) ? json.series : []);
-
-        if (!cancelled) {
-          setGreenDaysYTD(green);
-          setRedDaysYTD(red);
-        }
-      } catch (error) {
-        console.error("Failed to load YTD stats:", error);
-
-        if (!cancelled) {
-          setGreenDaysYTD(null);
-          setRedDaysYTD(null);
-        }
-      }
+    async function loadYTD() {
+      const res = await fetch(`/api/index?range=YTD`, { cache: "no-store" });
+      const json: ApiResponse = await res.json();
+      const { green, red } = countGreenRedDays(json.series || []);
+      setGreenDaysYTD(green);
+      setRedDaysYTD(red);
     }
 
-    loadYTDStats();
-
-    const interval = window.setInterval(loadYTDStats, 300_000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(interval);
-    };
+    loadYTD();
   }, []);
 
   const positive = change !== null && change >= 0;
   const lineColor = positive ? "#16a34a" : "#dc2626";
-  const gradientTop = positive ? "rgba(22,163,74,0.14)" : "rgba(220,38,38,0.12)";
-  const gradientBottom = positive ? "rgba(22,163,74,0.00)" : "rgba(220,38,38,0.00)";
+
+  const gradientTop = positive
+    ? "rgba(22,163,74,0.12)"
+    : "rgba(220,38,38,0.10)";
+
+  const gradientBottom = "rgba(0,0,0,0)";
 
   const baselineValue = useMemo(() => {
-    const firstReal = data.find((point) => typeof point.value === "number");
-    return firstReal?.value ?? null;
+    const first = data.find((d) => typeof d.value === "number");
+    return first?.value ?? null;
   }, [data]);
 
   return (
-    <div className={`${manrope.className} h-full w-full bg-white text-[#111111]`}>
-      <div className="flex h-full w-full flex-col gap-[8px] px-[clamp(12px,1.5vw,18px)] py-[clamp(12px,1.5vw,18px)]">
-        <div className="flex items-start justify-between gap-4 flex-shrink-0">
+    <div className={`${manrope.className} h-full w-full bg-white text-[#111]`}>
+      <div className="flex h-full flex-col gap-2 px-[14px] py-[14px]">
+
+        {/* HEADER */}
+        <div className="flex items-start justify-between">
+
           <div>
-            <h1 className="text-[clamp(18px,2.5vw,26px)] font-medium tracking-[-0.03em] leading-[1] text-[#111111]">
+            <h1 className="text-[20px] font-medium tracking-tight">
               Idiocracy Index
             </h1>
-
-            <p className="mt-1 text-[clamp(9px,1vw,11px)] font-medium text-black/45 leading-tight">
-              A live index of the companies cashing in on convenience, consumption, and cultural decline.
+            <p className="text-[10px] text-black/45 mt-1">
+              A live index of convenience, consumption, and decline.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 text-[clamp(8px,0.8vw,10px)] font-medium text-black/45 whitespace-nowrap">
+          {/* TRACKER */}
+          <div className="flex items-center gap-4 text-[12px] font-medium text-black/50 whitespace-nowrap">
             <span>
-              <span className="text-[#16a34a]">{greenDaysYTD ?? "—"}</span> up
+              <span className="text-[#16a34a] font-semibold">
+                {greenDaysYTD ?? "—"}
+              </span>{" "}
+              up
             </span>
             <span>
-              <span className="text-[#dc2626]">{redDaysYTD ?? "—"}</span> down
+              <span className="text-[#dc2626] font-semibold">
+                {redDaysYTD ?? "—"}
+              </span>{" "}
+              down
             </span>
           </div>
+
         </div>
 
-        <div className="flex-shrink-0">
-          <div className="text-[clamp(24px,3.8vw,34px)] font-medium tracking-[-0.03em] leading-none text-[#111111]">
+        {/* VALUE */}
+        <div>
+          <div className="text-[32px] font-medium">
             {current !== null ? current.toFixed(2) : "—"}
           </div>
 
           <div
-            className="mt-1 text-[clamp(9px,1vw,11px)] font-medium"
+            className="text-[11px] font-medium mt-1"
             style={{
-              color: change === null ? "rgba(0,0,0,0.42)" : lineColor,
+              color: change === null ? "rgba(0,0,0,0.4)" : lineColor,
             }}
           >
-            {change !== null ? (
-              <>
-                {positive ? "+" : ""}
-                {change.toFixed(2)}% <span className="text-black/35">{range}</span>
-              </>
-            ) : loading ? (
-              "Loading..."
-            ) : (
-              "Unavailable"
-            )}
+            {change !== null
+              ? `${change >= 0 ? "+" : ""}${change.toFixed(2)}% ${range}`
+              : "—"}
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-1.5 flex-shrink-0">
-          {RANGE_OPTIONS.map((item) => {
-            const active = range === item;
-
-            return (
-              <button
-                key={item}
-                onClick={() => setRange(item)}
-                className={`rounded-full px-[clamp(8px,1vw,11px)] py-[3px] text-[clamp(8px,0.85vw,10px)] font-medium transition ${
-                  active
-                    ? "bg-[#111111] text-white"
-                    : "bg-black/[0.04] text-black/55 hover:bg-black/[0.07] hover:text-black/80"
-                }`}
-              >
-                {item}
-              </button>
-            );
-          })}
+        {/* RANGE */}
+        <div className="flex gap-1.5 flex-wrap">
+          {RANGE_OPTIONS.map((r) => (
+            <button
+              key={r}
+              onClick={() => setRange(r)}
+              className={`text-[10px] px-2 py-1 rounded-full font-medium ${
+                r === range
+                  ? "bg-black text-white"
+                  : "bg-black/5 text-black/60"
+              }`}
+            >
+              {r}
+            </button>
+          ))}
         </div>
 
-        <div className="flex-1 min-h-0 w-full">
+        {/* CHART */}
+        <div className="flex-1">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data} margin={{ top: 4, right: 2, left: 0, bottom: 0 }}>
+            <ComposedChart data={data}>
               <defs>
-                <linearGradient id="lineFill" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={gradientTop} />
                   <stop offset="100%" stopColor={gradientBottom} />
                 </linearGradient>
               </defs>
 
               <XAxis dataKey="label" hide />
-              <YAxis hide domain={["dataMin", "dataMax"]} />
+              <YAxis hide />
 
-              {baselineValue !== null && (
+              {baselineValue && (
                 <ReferenceLine
                   y={baselineValue}
-                  stroke="rgba(0,0,0,0.12)"
+                  stroke="rgba(0,0,0,0.1)"
                   strokeDasharray="3 5"
                 />
               )}
 
               <Tooltip
-                cursor={false}
                 isAnimationActive={false}
                 content={<TinyTooltip color={lineColor} />}
               />
 
               <Area
-                type="monotone"
                 dataKey="value"
+                fill="url(#fill)"
                 stroke="none"
-                fill="url(#lineFill)"
                 isAnimationActive={false}
-                connectNulls={false}
               />
 
               <Line
-                type="monotone"
                 dataKey="value"
                 stroke={lineColor}
                 strokeWidth={1.5}
                 dot={false}
-                activeDot={{
-                  r: 3,
-                  fill: lineColor,
-                  stroke: "#ffffff",
-                  strokeWidth: 1.5,
-                }}
                 isAnimationActive={false}
-                connectNulls={false}
               />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="flex-shrink-0 text-[clamp(8px,0.8vw,10px)] font-medium text-black/30">
-          Not investment advice. For illustrative purposes only.
+        {/* FOOTER */}
+        <div className="text-[9px] text-black/30">
+          Not investment advice.
         </div>
+
       </div>
     </div>
   );
