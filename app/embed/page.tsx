@@ -87,12 +87,34 @@ function TinyTooltip({
   );
 }
 
+function countGreenRedDays(series: Point[]) {
+  let green = 0;
+  let red = 0;
+
+  const valid = series.filter(
+    (point): point is Point & { value: number } => typeof point.value === "number"
+  );
+
+  for (let i = 1; i < valid.length; i += 1) {
+    const prev = valid[i - 1].value;
+    const curr = valid[i].value;
+
+    if (curr > prev) green += 1;
+    else if (curr < prev) red += 1;
+  }
+
+  return { green, red };
+}
+
 export default function EmbedPage() {
   const [range, setRange] = useState<RangeKey>("1D");
   const [data, setData] = useState<Point[]>([]);
   const [current, setCurrent] = useState<number | null>(null);
   const [change, setChange] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [greenDaysYTD, setGreenDaysYTD] = useState<number | null>(null);
+  const [redDaysYTD, setRedDaysYTD] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -137,6 +159,42 @@ export default function EmbedPage() {
     };
   }, [range]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadYTDStats() {
+      try {
+        const res = await fetch(`/api/index?range=YTD`, {
+          cache: "no-store",
+        });
+
+        const json: ApiResponse = await res.json();
+        const { green, red } = countGreenRedDays(Array.isArray(json.series) ? json.series : []);
+
+        if (!cancelled) {
+          setGreenDaysYTD(green);
+          setRedDaysYTD(red);
+        }
+      } catch (error) {
+        console.error("Failed to load YTD stats:", error);
+
+        if (!cancelled) {
+          setGreenDaysYTD(null);
+          setRedDaysYTD(null);
+        }
+      }
+    }
+
+    loadYTDStats();
+
+    const interval = window.setInterval(loadYTDStats, 300_000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
+
   const positive = change !== null && change >= 0;
   const lineColor = positive ? "#16a34a" : "#dc2626";
   const gradientTop = positive ? "rgba(22,163,74,0.14)" : "rgba(220,38,38,0.12)";
@@ -150,14 +208,25 @@ export default function EmbedPage() {
   return (
     <div className={`${manrope.className} h-full w-full bg-white text-[#111111]`}>
       <div className="flex h-full w-full flex-col gap-[8px] px-[clamp(12px,1.5vw,18px)] py-[clamp(12px,1.5vw,18px)]">
-        <div className="flex-shrink-0">
-          <h1 className="text-[clamp(18px,2.5vw,26px)] font-medium tracking-[-0.03em] leading-[1] text-[#111111]">
-            Idiocracy Index
-          </h1>
+        <div className="flex items-start justify-between gap-4 flex-shrink-0">
+          <div>
+            <h1 className="text-[clamp(18px,2.5vw,26px)] font-medium tracking-[-0.03em] leading-[1] text-[#111111]">
+              Idiocracy Index
+            </h1>
 
-          <p className="mt-1 text-[clamp(9px,1vw,11px)] font-medium text-black/45 leading-tight">
-            A live index of the companies cashing in on convenience, consumption, and cultural decline.
-          </p>
+            <p className="mt-1 text-[clamp(9px,1vw,11px)] font-medium text-black/45 leading-tight">
+              A live index of the companies cashing in on convenience, consumption, and cultural decline.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 text-[clamp(8px,0.8vw,10px)] font-medium text-black/45 whitespace-nowrap">
+            <span>
+              <span className="text-[#16a34a]">{greenDaysYTD ?? "—"}</span> up
+            </span>
+            <span>
+              <span className="text-[#dc2626]">{redDaysYTD ?? "—"}</span> down
+            </span>
+          </div>
         </div>
 
         <div className="flex-shrink-0">
