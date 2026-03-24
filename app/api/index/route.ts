@@ -234,6 +234,12 @@ function expandToFullDay(points: SeriesPoint[]) {
   });
 }
 
+function isNonNullSeriesPoint(
+  point: SeriesPoint | null
+): point is SeriesPoint {
+  return point !== null;
+}
+
 export async function GET(req: NextRequest) {
   const rawRange = (req.nextUrl.searchParams.get("range") || "6M").toUpperCase() as RangeKey;
 
@@ -283,8 +289,8 @@ export async function GET(req: NextRequest) {
       return null;
     });
 
-    const rawSeries: SeriesPoint[] = commonTimestamps
-      .map((timestamp) => {
+    const rawSeries = commonTimestamps
+      .map((timestamp): SeriesPoint | null => {
         let total = 0;
         let count = 0;
 
@@ -313,7 +319,7 @@ export async function GET(req: NextRequest) {
           value: (total / count) * 100,
         };
       })
-      .filter((point): point is SeriesPoint => point !== null);
+      .filter(isNonNullSeriesPoint);
 
     const cleanedActualSeries = removeBadTail(rawSeries);
 
