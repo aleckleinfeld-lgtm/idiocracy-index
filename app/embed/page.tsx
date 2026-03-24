@@ -56,17 +56,17 @@ function TinyTooltip({
       style={{
         background: "#0f0f10",
         border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: 10,
-        padding: "10px 12px",
-        minWidth: 88,
+        borderRadius: 9,
+        padding: "8px 10px",
+        minWidth: 78,
         boxShadow: "0 8px 24px rgba(0,0,0,0.28)",
       }}
     >
       <div
         style={{
-          fontSize: 11,
+          fontSize: 10,
           color: "rgba(255,255,255,0.5)",
-          marginBottom: 4,
+          marginBottom: 3,
           lineHeight: 1.1,
         }}
       >
@@ -74,7 +74,7 @@ function TinyTooltip({
       </div>
       <div
         style={{
-          fontSize: 13,
+          fontSize: 12,
           fontWeight: 700,
           color,
           lineHeight: 1.1,
@@ -138,7 +138,7 @@ export default function EmbedPage() {
 
   const positive = change !== null && change >= 0;
   const lineColor = positive ? "#22c55e" : "#ef4444";
-  const gradientTop = positive ? "rgba(34,197,94,0.24)" : "rgba(239,68,68,0.22)";
+  const gradientTop = positive ? "rgba(34,197,94,0.22)" : "rgba(239,68,68,0.20)";
   const gradientBottom = positive ? "rgba(34,197,94,0.00)" : "rgba(239,68,68,0.00)";
 
   const baselineValue = useMemo(() => {
@@ -146,32 +146,26 @@ export default function EmbedPage() {
     return firstReal?.value ?? null;
   }, [data]);
 
-  const currentDotData = useMemo(() => {
-    const reversed = [...data].reverse();
-    const latest = reversed.find((point) => typeof point.value === "number");
-    return latest ?? null;
-  }, [data]);
-
   return (
     <div className={`${manrope.className} h-full w-full bg-[#0a0a0a] text-white`}>
-      <div className="flex h-full w-full flex-col gap-[10px] px-[clamp(14px,2vw,22px)] py-[clamp(14px,2vw,20px)]">
+      <div className="flex h-full w-full flex-col gap-[8px] px-[clamp(12px,1.6vw,18px)] py-[clamp(12px,1.6vw,18px)]">
         <div className="flex-shrink-0">
-          <h1 className="text-[clamp(22px,3.5vw,34px)] font-extrabold tracking-[-0.04em] leading-[0.95]">
+          <h1 className="text-[clamp(20px,2.9vw,30px)] font-extrabold tracking-[-0.04em] leading-[0.95]">
             Idiocracy Index
           </h1>
 
-          <p className="mt-1 text-[clamp(11px,1.3vw,14px)] text-white/55 leading-tight">
+          <p className="mt-1 text-[clamp(10px,1.05vw,12px)] text-white/55 leading-tight">
             A live index of the companies cashing in on convenience, consumption, and cultural decline.
           </p>
         </div>
 
         <div className="flex-shrink-0">
-          <div className="text-[clamp(30px,5vw,52px)] font-extrabold tracking-[-0.045em] leading-none">
+          <div className="text-[clamp(28px,4.6vw,44px)] font-extrabold tracking-[-0.045em] leading-none">
             {current !== null ? current.toFixed(2) : "—"}
           </div>
 
           <div
-            className={`mt-1 text-[clamp(11px,1.3vw,14px)] font-semibold ${
+            className={`mt-1 text-[clamp(10px,1.05vw,12px)] font-semibold ${
               change === null ? "text-white/45" : ""
             }`}
             style={{
@@ -191,7 +185,7 @@ export default function EmbedPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 flex-shrink-0">
+        <div className="flex flex-wrap gap-1.5 flex-shrink-0">
           {RANGE_OPTIONS.map((item) => {
             const active = range === item;
 
@@ -199,7 +193,7 @@ export default function EmbedPage() {
               <button
                 key={item}
                 onClick={() => setRange(item)}
-                className={`rounded-full px-[clamp(10px,1.5vw,14px)] py-[5px] text-[clamp(10px,1vw,12px)] font-semibold transition ${
+                className={`rounded-full px-[clamp(9px,1.2vw,12px)] py-[4px] text-[clamp(9px,0.9vw,11px)] font-semibold transition ${
                   active
                     ? "bg-white text-black"
                     : "bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
@@ -213,7 +207,7 @@ export default function EmbedPage() {
 
         <div className="flex-1 min-h-0 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data} margin={{ top: 6, right: 2, left: 0, bottom: 0 }}>
+            <ComposedChart data={data} margin={{ top: 4, right: 2, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="lineFill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={gradientTop} />
@@ -235,9 +229,7 @@ export default function EmbedPage() {
               <Tooltip
                 cursor={false}
                 isAnimationActive={false}
-                content={
-                  <TinyTooltip color={lineColor} />
-                }
+                content={<TinyTooltip color={lineColor} />}
               />
 
               <Area
@@ -253,27 +245,27 @@ export default function EmbedPage() {
                 type="monotone"
                 dataKey="value"
                 stroke={lineColor}
-                strokeWidth={2.5}
+                strokeWidth={2.2}
                 dot={false}
                 activeDot={{
-                  r: 4,
+                  r: 3.5,
                   fill: lineColor,
                   stroke: "#ffffff",
-                  strokeWidth: 2,
+                  strokeWidth: 1.8,
                 }}
                 isAnimationActive={false}
                 connectNulls={false}
                 style={{
                   filter: positive
-                    ? "drop-shadow(0 0 10px rgba(34,197,94,0.42))"
-                    : "drop-shadow(0 0 10px rgba(239,68,68,0.36))",
+                    ? "drop-shadow(0 0 8px rgba(34,197,94,0.36))"
+                    : "drop-shadow(0 0 8px rgba(239,68,68,0.32))",
                 }}
               />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="flex-shrink-0 text-[clamp(10px,1vw,12px)] text-white/35">
+        <div className="flex-shrink-0 text-[clamp(9px,0.9vw,11px)] text-white/35">
           Not investment advice. For illustrative purposes only.
         </div>
       </div>
