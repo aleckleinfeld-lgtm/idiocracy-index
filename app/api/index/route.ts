@@ -95,18 +95,8 @@ function formatLabel(timestamp: number, range: RangeKey) {
   });
 }
 
-function getETTimeKey(timestamp: number) {
-  const date = new Date(timestamp * 1000);
-  return date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "America/New_York",
-  });
-}
-
 function buildMarketDaySlots() {
-  const slots: Array<{ key: string; label: string }> = [];
+  const slots: Array<{ label: string }> = [];
 
   let hour = 9;
   let minute = 30;
@@ -119,10 +109,7 @@ function buildMarketDaySlots() {
       minute: "2-digit",
     });
 
-    slots.push({
-      key,
-      label: display,
-    });
+    slots.push({ label: display });
 
     minute += 5;
     if (minute >= 60) {
@@ -211,33 +198,89 @@ function removeBadTail(points: SeriesPoint[]) {
   return cleaned;
 }
 
-function expandToFullDay(points: SeriesPoint[]) {
+function isNonNullSeriesPoint(point: SeriesPoint | null): point is SeriesPoint {
+  return point !== null;
+}
+
+function buildIntradaySeries(seriesList: YahooPoint[][]): {
+  series: SeriesPoint[];
+  current: number | null;
+  change: number | null;
+} {
   const slots = buildMarketDaySlots();
+  const normalizedSeries = seriesList
+    .map((points) => {
+      const first = points.find((p) => typeof p.close === "number" && p.close > 0);
+      if (!first) return [];
+      return points.map((p) => ({
+        timestamp: p.timestamp,
+        value: (p.close / first.close) * 100,
+      }));
+    })
+    .filter((arr) => arr.length > 0);
 
-  const pointMap = new Map<string, SeriesPoint>();
+  if (normalizedSeries.length < 2) {
+    return { series: [], current: null, change: null };
+  }
 
-  for (const point of points) {
-    if (typeof point.timestamp === "number") {
-      pointMap.set(getETTimeKey(point.timestamp), point);
+  const maxLength = Math.max(...normalizedSeries.map((arr) => arr.length));
+
+  const actualSeries: SeriesPoint[] = [];
+
+  for (let i = 0; i < maxLength; i += 1) {
+    let total = 0;
+    let count = 0;
+    let timestamp: number | null = null;
+
+    for (const tickerSeries of normalizedSeries) {
+      const point = tickerSeries[i];
+      if (point && typeof point.value === "number") {
+        total += point.value;
+        count += 1;
+        if (timestamp === null) timestamp = point.timestamp;
+      }
+    }
+
+    if (count >= 2) {
+      actualSeries.push({
+        date: timestamp ? new Date(timestamp * 1000).toISOString() : "",
+        label: timestamp ? formatLabel(timestamp, "1D") : "",
+        timestamp,
+        value: total / count,
+      });
     }
   }
 
-  return slots.map((slot) => {
-    const match = pointMap.get(slot.key);
+  const cleanedActualSeries = removeBadTail(actualSeries);
 
+  if (cleanedActualSeries.length < 2) {
+    return { series: [], current: null, change: null };
+  }
+
+  const expandedSeries: SeriesPoint[] = slots.map((slot, index) => {
+    const point = cleanedActualSeries[index];
     return {
       date: slot.label,
       label: slot.label,
-      timestamp: match?.timestamp ?? null,
-      value: match?.value ?? null,
+      timestamp: point?.timestamp ?? null,
+      value: point?.value ?? null,
     };
   });
-}
 
-function isNonNullSeriesPoint(
-  point: SeriesPoint | null
-): point is SeriesPoint {
-  return point !== null;
+  const firstActual = cleanedActualSeries[0].value;
+  const currentActual = cleanedActualSeries[cleanedActualSeries.length - 1].value;
+  const change =
+    typeof firstActual === "number" &&
+    typeof currentActual === "number" &&
+    firstActual !== 0
+      ? ((currentActual - firstActual) / firstActual) * 100
+      : null;
+
+  return {
+    series: expandedSeries,
+    current: currentActual,
+    change,
+  };
 }
 
 export async function GET(req: NextRequest) {
@@ -265,6 +308,11 @@ export async function GET(req: NextRequest) {
         current: null,
         change: null,
       });
+    }
+
+    if (range === "1D") {
+      const intraday = buildIntradaySeries(validSeries);
+      return NextResponse.json(intraday);
     }
 
     const commonTimestamps = intersectTimestamps(validSeries);
@@ -340,11 +388,8 @@ export async function GET(req: NextRequest) {
         ? ((currentActual - firstActual) / firstActual) * 100
         : null;
 
-    const series =
-      range === "1D" ? expandToFullDay(cleanedActualSeries) : cleanedActualSeries;
-
     return NextResponse.json({
-      series,
+      series: cleanedActualSeries,
       current: currentActual,
       change,
     });
