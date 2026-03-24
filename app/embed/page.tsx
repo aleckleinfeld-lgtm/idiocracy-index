@@ -145,12 +145,12 @@ export default function EmbedPage() {
               Idiocracy Index
             </h1>
 
-            <p className="mt-[6px] text-[9px] text-black/45">
+            <p className="mt-[4px] text-[9px] text-black/45">
               A live index of convenience, consumption, and decline.
             </p>
 
             {/* VALUE + CHANGE INLINE */}
-            <div className="mt-[10px] flex items-end gap-[10px]">
+            <div className="mt-[8px] flex items-end gap-[10px]">
               <div className="text-[44px] font-medium leading-none">
                 {current !== null ? current.toFixed(2) : "—"}
               </div>
@@ -166,7 +166,7 @@ export default function EmbedPage() {
             </div>
 
             {/* RANGE BUTTONS */}
-            <div className="mt-[14px] flex gap-[6px]">
+            <div className="mt-[10px] flex gap-[6px]">
               {RANGE_OPTIONS.map((r) => (
                 <button
                   key={r}
