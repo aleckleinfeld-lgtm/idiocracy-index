@@ -32,8 +32,11 @@ type ApiResponse = {
 
 const RANGE_OPTIONS: RangeKey[] = ["1D", "1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
 
-function formatTooltipLabel(label: string) {
-  return label || "";
+function formatTooltipLabel(label: unknown) {
+  if (typeof label === "string" || typeof label === "number") {
+    return String(label);
+  }
+  return "";
 }
 
 export default function Page() {
