@@ -35,12 +35,7 @@ type ApiResponse = {
 
 const RANGE_OPTIONS: RangeKey[] = ["1D", "1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
 
-function TinyTooltip({
-  active,
-  payload,
-  label,
-  color,
-}: any) {
+function TinyTooltip({ active, payload, label, color }: any) {
   if (!active || !payload?.length) return null;
 
   const value =
@@ -133,13 +128,20 @@ export default function EmbedPage() {
   }, [data]);
 
   return (
-    <div className={`${manrope.className} h-full w-full bg-white text-[#111]`}>
+    <div
+      className={`${manrope.className} h-full w-full text-[#111]`}
+      style={{
+        backgroundColor:
+          change === null
+            ? "#ffffff"
+            : positive
+            ? "#f3fbf6"
+            : "#fdf4f4",
+      }}
+    >
       <div className="flex h-full flex-col px-[18px] py-[18px]">
 
-        {/* HEADER */}
         <div className="flex items-start justify-between">
-
-          {/* LEFT */}
           <div>
             <h1 className="text-[18px] font-medium tracking-tight">
               Idiocracy Index
@@ -149,7 +151,6 @@ export default function EmbedPage() {
               A live index of convenience, consumption, and decline.
             </p>
 
-            {/* VALUE + CHANGE INLINE */}
             <div className="mt-[8px] flex items-end gap-[10px]">
               <div className="text-[44px] font-medium leading-none">
                 {current !== null ? current.toFixed(2) : "—"}
@@ -165,7 +166,6 @@ export default function EmbedPage() {
               </div>
             </div>
 
-            {/* RANGE BUTTONS */}
             <div className="mt-[10px] flex gap-[6px]">
               {RANGE_OPTIONS.map((r) => (
                 <button
@@ -183,7 +183,6 @@ export default function EmbedPage() {
             </div>
           </div>
 
-          {/* RIGHT BADGES */}
           <div className="flex flex-col items-end gap-[6px] mt-[2px]">
             <div className="rounded-full bg-[#16a34a] px-[10px] py-[5px] text-[11px] text-white font-medium">
               {greenDaysYTD ?? "—"} Green days
@@ -192,10 +191,8 @@ export default function EmbedPage() {
               {redDaysYTD ?? "—"} Red days
             </div>
           </div>
-
         </div>
 
-        {/* CHART */}
         <div className="mt-[14px] flex-1">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data}>
@@ -243,7 +240,6 @@ export default function EmbedPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* FOOTER */}
         <div className="text-[9px] text-black/30 mt-[6px]">
           Not investment advice.
         </div>
