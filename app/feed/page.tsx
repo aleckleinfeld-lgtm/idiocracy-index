@@ -19,6 +19,9 @@ async function getFeed() {
   const apiKey = process.env.AIRTABLE_TOKEN;
   const baseId = process.env.AIRTABLE_BASE_ID;
 
+  const tableId = "tblCkYWOUxwy9owM8";
+  const viewId = "viwWo8p3NKGsb13L5";
+
   if (!apiKey || !baseId) {
     return {
       records: [],
@@ -27,7 +30,8 @@ async function getFeed() {
   }
 
   const url =
-    `https://api.airtable.com/v0/${baseId}/Feed?view=Site%20Feed&maxRecords=5`;
+    `https://api.airtable.com/v0/${baseId}/${tableId}` +
+    `?view=${viewId}&maxRecords=5`;
 
   const res = await fetch(url, {
     headers: {
