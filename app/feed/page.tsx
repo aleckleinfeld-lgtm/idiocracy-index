@@ -10,7 +10,7 @@ const manrope = Manrope({
 type FeedItem = {
   id: string;
   fields: {
-    Headline?: string;
+    Summary?: string;
     "Source URL"?: string;
   };
 };
@@ -88,7 +88,7 @@ export default async function FeedPage() {
         />
 
         {records.map((item: FeedItem) => {
-          const headline = item.fields.Headline;
+          const headline = item.fields.Summary;
           const link = item.fields["Source URL"];
 
           if (!headline || !link) return null;
@@ -112,7 +112,7 @@ export default async function FeedPage() {
                 <span style={{ marginLeft: 8 }}>→</span>
               </a>
 
-              {/* THICKER DIVIDER */}
+              {/* DIVIDER */}
               <div
                 style={{
                   height: "2.5px",
