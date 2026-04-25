@@ -22,10 +22,6 @@ async function getFeed() {
   const tableId = "tblCkYWOUxwy9owM8";
   const viewId = "viwWo8p3NKGsb13L5";
 
-  if (!apiKey || !baseId) {
-    return { records: [], error: "Missing Airtable credentials." };
-  }
-
   const url =
     `https://api.airtable.com/v0/${baseId}/${tableId}` +
     `?view=${viewId}&maxRecords=5`;
@@ -35,57 +31,61 @@ async function getFeed() {
     cache: "no-store",
   });
 
-  if (!res.ok) {
-    const text = await res.text();
-    return { records: [], error: `Airtable error ${res.status}: ${text}` };
-  }
-
   const data = await res.json();
-  return { records: data.records || [], error: null };
+  return data.records || [];
 }
 
 export default async function FeedPage() {
-  const { records, error } = await getFeed();
-
-  if (error) {
-    return (
-      <pre style={{ color: "black", background: "white", padding: 16 }}>
-        {error}
-      </pre>
-    );
-  }
+  const records = await getFeed();
 
   return (
     <>
       <style>{`
         html, body {
-          margin: 0 !important;
-          padding: 0 !important;
-          background: transparent !important;
+          margin: 0;
+          padding: 0;
+          background: transparent;
+        }
+
+        .row {
+          display: block;
+          text-decoration: none;
+          color: #000;
+          padding: 22px 0;
+          transition: all 0.2s ease;
+        }
+
+        .row:hover {
+          background: #e10600;
+          color: #fff;
+        }
+
+        .row:hover .arrow {
+          color: #fff;
+        }
+
+        .divider {
+          height: 2.5px;
+          background: #000;
+          width: 100%;
+        }
+
+        .top-line {
+          height: 2.5px;
+          background: #000;
+          width: 100%;
         }
       `}</style>
 
       <main
         className={manrope.className}
         style={{
-          margin: 0,
-          padding: 0,
-          background: "transparent",
           fontSize: "26px",
           lineHeight: "31px",
           letterSpacing: "-0.6px",
-          color: "#000",
-          width: "100%",
         }}
       >
-        {/* TOP LINE */}
-        <div
-          style={{
-            height: "2.5px",
-            backgroundColor: "#000",
-            width: "100%",
-          }}
-        />
+        <div className="top-line" />
 
         {records.map((item: FeedItem) => {
           const headline = item.fields.Summary;
@@ -99,27 +99,15 @@ export default async function FeedPage() {
                 href={link}
                 target="_blank"
                 rel="noreferrer"
-                style={{
-                  display: "block",
-                  color: "#000",
-                  textDecoration: "none",
-                  fontWeight: 500,
-                  paddingTop: "22px",
-                  paddingBottom: "22px",
-                }}
+                className="row"
               >
                 {headline}
-                <span style={{ marginLeft: 8 }}>→</span>
+                <span className="arrow" style={{ marginLeft: 8 }}>
+                  →
+                </span>
               </a>
 
-              {/* DIVIDER */}
-              <div
-                style={{
-                  height: "2.5px",
-                  backgroundColor: "#000",
-                  width: "100%",
-                }}
-              />
+              <div className="divider" />
             </div>
           );
         })}
