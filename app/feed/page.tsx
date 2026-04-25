@@ -50,6 +50,9 @@ export default async function FeedPage() {
 
         .feed {
           overflow: visible;
+          padding-left: 70px;
+          margin-left: -70px;
+          padding-right: 18px;
         }
 
         .row {
@@ -57,18 +60,17 @@ export default async function FeedPage() {
           color: #000;
           text-decoration: none;
           font-weight: 500;
-          padding: 22px 0;
-          margin-left: -42px;
-          padding-left: 42px;
-          transition: background-color 0.15s ease, color 0.15s ease;
+          padding: 22px 24px;
+          border-radius: 22px;
+          transition: background-color 0.15s ease;
         }
 
         .row:hover {
-          background: #c93a32;
-          color: #fff;
+          background: rgba(255, 255, 255, 0.92);
+          color: #000;
         }
 
-        .divider {
+        .spacer {
           height: 2.5px;
           background: transparent;
           width: 100%;
@@ -85,7 +87,7 @@ export default async function FeedPage() {
           width: "100%",
         }}
       >
-        <div className="divider" />
+        <div className="spacer" />
 
         {records.map((item: FeedItem) => {
           const headline = item.fields.Summary;
@@ -105,7 +107,7 @@ export default async function FeedPage() {
                 <span style={{ marginLeft: 8 }}>→</span>
               </a>
 
-              <div className="divider" />
+              <div className="spacer" />
             </div>
           );
         })}
