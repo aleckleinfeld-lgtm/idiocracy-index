@@ -48,7 +48,11 @@ export default async function FeedPage() {
   const { records, error } = await getFeed();
 
   if (error) {
-    return <pre style={{ color: "black", background: "white", padding: 16 }}>{error}</pre>;
+    return (
+      <pre style={{ color: "black", background: "white", padding: 16 }}>
+        {error}
+      </pre>
+    );
   }
 
   return (
@@ -74,7 +78,7 @@ export default async function FeedPage() {
           width: "100%",
         }}
       >
-        {records.map((item: FeedItem, index: number) => {
+        {records.map((item: FeedItem) => {
           const headline = item.fields.Headline;
           const link = item.fields["Source URL"];
 
@@ -99,15 +103,14 @@ export default async function FeedPage() {
                 <span style={{ marginLeft: 8 }}>→</span>
               </a>
 
-              {index !== records.length - 1 && (
-                <div
-                  style={{
-                    height: "1.5px",
-                    backgroundColor: "#000",
-                    width: "100%",
-                  }}
-                />
-              )}
+              {/* divider under EVERY item including last */}
+              <div
+                style={{
+                  height: "1.5px",
+                  backgroundColor: "#000",
+                  width: "100%",
+                }}
+              />
             </div>
           );
         })}
