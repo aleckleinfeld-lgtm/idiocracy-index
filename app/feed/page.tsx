@@ -78,6 +78,15 @@ export default async function FeedPage() {
           width: "100%",
         }}
       >
+        {/* TOP LINE */}
+        <div
+          style={{
+            height: "2.5px",
+            backgroundColor: "#000",
+            width: "100%",
+          }}
+        />
+
         {records.map((item: FeedItem) => {
           const headline = item.fields.Headline;
           const link = item.fields["Source URL"];
@@ -103,10 +112,10 @@ export default async function FeedPage() {
                 <span style={{ marginLeft: 8 }}>→</span>
               </a>
 
-              {/* divider under EVERY item including last */}
+              {/* THICKER DIVIDER */}
               <div
                 style={{
-                  height: "1.5px",
+                  height: "2.5px",
                   backgroundColor: "#000",
                   width: "100%",
                 }}
