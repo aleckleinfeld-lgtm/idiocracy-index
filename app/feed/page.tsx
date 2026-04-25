@@ -57,9 +57,9 @@ export default async function FeedPage() {
           text-decoration: none;
           font-weight: 500;
 
-          padding: 12px 14px;   /* tighter */
-          margin-left: -14px;   /* keep alignment */
-          border-radius: 12px; /* tighter corners */
+          padding: 14px 16px;
+          margin-left: -16px;
+          border-radius: 12px;
 
           transition: background 0.12s ease;
         }
@@ -69,7 +69,7 @@ export default async function FeedPage() {
         }
 
         .spacer {
-          height: 10px; /* slightly tighter vertical rhythm */
+          height: 28px;
         }
       `}</style>
 
