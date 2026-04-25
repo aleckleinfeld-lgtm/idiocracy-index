@@ -45,14 +45,18 @@ export default async function FeedPage() {
           margin: 0 !important;
           padding: 0 !important;
           background: transparent !important;
-          overflow: visible !important;
         }
 
         .feed {
-          overflow: visible;
-          padding-left: 35px;
-          margin-left: -35px;
-          padding-right: 18px;
+          padding-left: 24px;   /* SAME as hover box inset */
+          padding-right: 0;
+        }
+
+        .top-line {
+          height: 2.5px;
+          background: #000;
+          width: 100%;
+          margin-bottom: 14px;
         }
 
         .row {
@@ -60,20 +64,20 @@ export default async function FeedPage() {
           color: #000;
           text-decoration: none;
           font-weight: 500;
-          padding: 22px 24px;
-          border-radius: 22px;
-          transition: background-color 0.15s ease;
+
+          padding: 18px 20px;   /* controls box tightness */
+          margin-left: -20px;   /* pulls box to align with line */
+          border-radius: 18px;
+
+          transition: background 0.15s ease;
         }
 
         .row:hover {
-          background: rgba(255, 255, 255, 0.92);
-          color: #000;
+          background: rgba(255,255,255,0.95);
         }
 
         .spacer {
-          height: 2.5px;
-          background: transparent;
-          width: 100%;
+          height: 12px; /* vertical rhythm between items */
         }
       `}</style>
 
@@ -83,11 +87,9 @@ export default async function FeedPage() {
           fontSize: "26px",
           lineHeight: "31px",
           letterSpacing: "-0.6px",
-          background: "transparent",
-          width: "100%",
         }}
       >
-        <div className="spacer" />
+        <div className="top-line" />
 
         {records.map((item: FeedItem) => {
           const headline = item.fields.Summary;
