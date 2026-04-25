@@ -22,122 +22,80 @@ async function getFeed() {
   const tableId = "tblCkYWOUxwy9owM8";
   const viewId = "viwWo8p3NKGsb13L5";
 
-  if (!apiKey || !baseId) {
-    return {
-      records: [],
-      error: "Missing AIRTABLE_TOKEN or AIRTABLE_BASE_ID in Vercel.",
-    };
-  }
-
   const url =
     `https://api.airtable.com/v0/${baseId}/${tableId}` +
     `?view=${viewId}&maxRecords=5`;
 
   const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-    },
+    headers: { Authorization: `Bearer ${apiKey}` },
     cache: "no-store",
   });
 
   if (!res.ok) {
     const text = await res.text();
-    return {
-      records: [],
-      error: `Airtable error ${res.status}: ${text}`,
-    };
+    return { records: [], error: `Airtable error ${res.status}: ${text}` };
   }
 
   const data = await res.json();
-
-  return {
-    records: data.records || [],
-    error: null,
-  };
+  return { records: data.records || [], error: null };
 }
 
 export default async function FeedPage() {
   const { records, error } = await getFeed();
 
   if (error) {
-    return (
-      <pre
-        style={{
-          whiteSpace: "pre-wrap",
-          fontFamily: "sans-serif",
-          fontSize: "14px",
-          color: "black",
-          background: "white",
-          padding: "16px",
-        }}
-      >
-        {error}
-      </pre>
-    );
-  }
-
-  if (!records.length) {
-    return (
-      <div
-        style={{
-          fontFamily: "sans-serif",
-          fontSize: "14px",
-          color: "black",
-          background: "transparent",
-          padding: "16px 0",
-        }}
-      >
-        No published headlines found.
-      </div>
-    );
+    return <pre>{error}</pre>;
   }
 
   return (
     <main
-      className={`${manrope.className} w-full bg-transparent text-black`}
+      className={manrope.className}
       style={{
-        fontSize: "16px",
-        lineHeight: "18px",
-        letterSpacing: "-0.2px",
+        margin: 0,
+        padding: 0,
         background: "transparent",
+        fontSize: "26px",
+        lineHeight: "28px",
+        letterSpacing: "-0.7px",
+        color: "#000",
+        width: "100%",
       }}
     >
-      <div className="w-full max-w-[100%]">
-        {records.map((item: FeedItem, index: number) => {
-          const headline = item.fields.Headline;
-          const link = item.fields["Source URL"];
+      {records.map((item: FeedItem, index: number) => {
+        const headline = item.fields.Headline;
+        const link = item.fields["Source URL"];
 
-          if (!headline || !link) return null;
+        if (!headline || !link) return null;
 
-          return (
-            <div key={item.id}>
-              <a
-                href={link}
-                target="_blank"
-                rel="noreferrer"
-                className="block py-[10px] underline-offset-2 hover:underline"
+        return (
+          <div key={item.id}>
+            <a
+              href={link}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: "block",
+                color: "#000",
+                textDecoration: "none",
+                fontWeight: 500,
+                padding: "10px 0",
+              }}
+            >
+              {headline} <span style={{ marginLeft: 6 }}>→</span>
+            </a>
+
+            {index !== records.length - 1 && (
+              <div
                 style={{
-                  color: "#000",
-                  textDecoration: "none",
-                  fontWeight: 500,
+                  height: "2px",
+                  backgroundColor: "#000",
+                  width: "100%",
                 }}
-              >
-                {headline} <span style={{ marginLeft: 4 }}>→</span>
-              </a>
-
-              {index !== records.length - 1 && (
-                <div
-                  style={{
-                    height: "1px",
-                    backgroundColor: "#000", // ← PURE BLACK LINE
-                    width: "100%",
-                  }}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
+              />
+            )}
+          </div>
+        );
+      })}
     </main>
   );
 }
