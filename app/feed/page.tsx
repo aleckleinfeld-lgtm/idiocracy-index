@@ -48,15 +48,7 @@ export default async function FeedPage() {
         }
 
         .feed {
-          padding-left: 24px;   /* SAME as hover box inset */
-          padding-right: 0;
-        }
-
-        .top-line {
-          height: 2.5px;
-          background: #000;
-          width: 100%;
-          margin-bottom: 14px;
+          padding-left: 24px;
         }
 
         .row {
@@ -65,8 +57,8 @@ export default async function FeedPage() {
           text-decoration: none;
           font-weight: 500;
 
-          padding: 18px 20px;   /* controls box tightness */
-          margin-left: -20px;   /* pulls box to align with line */
+          padding: 18px 20px;
+          margin-left: -20px;
           border-radius: 18px;
 
           transition: background 0.15s ease;
@@ -77,7 +69,7 @@ export default async function FeedPage() {
         }
 
         .spacer {
-          height: 12px; /* vertical rhythm between items */
+          height: 12px;
         }
       `}</style>
 
@@ -89,8 +81,6 @@ export default async function FeedPage() {
           letterSpacing: "-0.6px",
         }}
       >
-        <div className="top-line" />
-
         {records.map((item: FeedItem) => {
           const headline = item.fields.Summary;
           const link = item.fields["Source URL"];
