@@ -50,8 +50,8 @@ export default async function FeedPage() {
 
         .feed {
           overflow: visible;
-          padding-left: 70px;
-          margin-left: -70px;
+          padding-left: 50px;
+          margin-left: -50px;
           padding-right: 18px;
         }
 
