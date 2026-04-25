@@ -48,15 +48,19 @@ export default async function FeedPage() {
   const { records, error } = await getFeed();
 
   if (error) {
-    return (
-      <pre style={{ color: "black", background: "white", padding: 16 }}>
-        {error}
-      </pre>
-    );
+    return <pre style={{ color: "black", background: "white", padding: 16 }}>{error}</pre>;
   }
 
   return (
-    <div style={{ background: "transparent", margin: 0, padding: 0 }}>
+    <>
+      <style>{`
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          background: transparent !important;
+        }
+      `}</style>
+
       <main
         className={manrope.className}
         style={{
@@ -64,7 +68,7 @@ export default async function FeedPage() {
           padding: 0,
           background: "transparent",
           fontSize: "26px",
-          lineHeight: "30px",
+          lineHeight: "31px",
           letterSpacing: "-0.6px",
           color: "#000",
           width: "100%",
@@ -87,8 +91,8 @@ export default async function FeedPage() {
                   color: "#000",
                   textDecoration: "none",
                   fontWeight: 500,
-                  paddingTop: "14px",
-                  paddingBottom: "14px",
+                  paddingTop: "22px",
+                  paddingBottom: "22px",
                 }}
               >
                 {headline}
@@ -108,6 +112,6 @@ export default async function FeedPage() {
           );
         })}
       </main>
-    </div>
+    </>
   );
 }
