@@ -42,23 +42,13 @@ export default async function FeedPage() {
     <>
       <style>{`
         html, body {
-          margin: 0;
-          padding: 0;
-          background: transparent;
+          margin: 0 !important;
+          padding: 0 !important;
+          background: transparent !important;
         }
 
         .feed {
           padding-left: 24px;
-        }
-
-        .item {
-          position: relative;
-        }
-
-        .line {
-          height: 2px;
-          background: #000;
-          width: 100%;
         }
 
         .row {
@@ -67,17 +57,19 @@ export default async function FeedPage() {
           text-decoration: none;
           font-weight: 500;
 
-          padding: 14px 16px;
-          margin: 10px 0;
-          margin-left: -16px;
-
-          border-radius: 14px;
+          padding: 12px 14px;   /* tighter */
+          margin-left: -14px;   /* keep alignment */
+          border-radius: 12px; /* tighter corners */
 
           transition: background 0.12s ease;
         }
 
         .row:hover {
           background: rgba(255,255,255,0.95);
+        }
+
+        .spacer {
+          height: 10px; /* slightly tighter vertical rhythm */
         }
       `}</style>
 
@@ -96,11 +88,7 @@ export default async function FeedPage() {
           if (!headline || !link) return null;
 
           return (
-            <div key={item.id} className="item">
-              
-              {/* TOP LINE */}
-              <div className="line" />
-
+            <div key={item.id}>
               <a
                 href={link}
                 target="_blank"
@@ -111,12 +99,10 @@ export default async function FeedPage() {
                 <span style={{ marginLeft: 8 }}>→</span>
               </a>
 
+              <div className="spacer" />
             </div>
           );
         })}
-
-        {/* FINAL BOTTOM LINE */}
-        <div className="line" />
       </main>
     </>
   );
