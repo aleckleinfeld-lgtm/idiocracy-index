@@ -52,16 +52,15 @@ export default async function FeedPage() {
           text-decoration: none;
           color: #000;
           padding: 22px 0;
-          transition: all 0.2s ease;
+          transition: color 0.2s ease;
         }
 
         .row:hover {
-          background: #e10600;
-          color: #fff;
+          color: #c93a32;
         }
 
         .row:hover .arrow {
-          color: #fff;
+          color: #c93a32;
         }
 
         .divider {
