@@ -122,14 +122,14 @@ export default async function FeedPage() {
                   fontWeight: 500,
                 }}
               >
-                {headline} ↗
+                {headline} <span style={{ marginLeft: 4 }}>→</span>
               </a>
 
               {index !== records.length - 1 && (
                 <div
                   style={{
                     height: "1px",
-                    backgroundColor: "rgba(0,0,0,0.12)",
+                    backgroundColor: "#000", // ← PURE BLACK LINE
                     width: "100%",
                   }}
                 />
