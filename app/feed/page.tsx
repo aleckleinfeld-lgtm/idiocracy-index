@@ -42,49 +42,50 @@ export default async function FeedPage() {
     <>
       <style>{`
         html, body {
-          margin: 0;
-          padding: 0;
-          background: transparent;
+          margin: 0 !important;
+          padding: 0 !important;
+          background: transparent !important;
+          overflow: visible !important;
+        }
+
+        .feed {
+          overflow: visible;
         }
 
         .row {
           display: block;
-          text-decoration: none;
           color: #000;
+          text-decoration: none;
+          font-weight: 500;
           padding: 22px 0;
-          transition: color 0.2s ease;
+          margin-left: -42px;
+          padding-left: 42px;
+          transition: background-color 0.15s ease, color 0.15s ease;
         }
 
         .row:hover {
-          color: #c93a32;
-        }
-
-        .row:hover .arrow {
-          color: #c93a32;
+          background: #c93a32;
+          color: #fff;
         }
 
         .divider {
           height: 2.5px;
-          background: #000;
-          width: 100%;
-        }
-
-        .top-line {
-          height: 2.5px;
-          background: #000;
+          background: transparent;
           width: 100%;
         }
       `}</style>
 
       <main
-        className={manrope.className}
+        className={`${manrope.className} feed`}
         style={{
           fontSize: "26px",
           lineHeight: "31px",
           letterSpacing: "-0.6px",
+          background: "transparent",
+          width: "100%",
         }}
       >
-        <div className="top-line" />
+        <div className="divider" />
 
         {records.map((item: FeedItem) => {
           const headline = item.fields.Summary;
@@ -101,9 +102,7 @@ export default async function FeedPage() {
                 className="row"
               >
                 {headline}
-                <span className="arrow" style={{ marginLeft: 8 }}>
-                  →
-                </span>
+                <span style={{ marginLeft: 8 }}>→</span>
               </a>
 
               <div className="divider" />
