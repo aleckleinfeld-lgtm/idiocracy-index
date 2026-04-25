@@ -57,11 +57,11 @@ export default async function FeedPage() {
           text-decoration: none;
           font-weight: 500;
 
-          padding: 18px 20px;
-          margin-left: -20px;
-          border-radius: 18px;
+          padding: 12px 14px;   /* tighter */
+          margin-left: -14px;   /* keep alignment */
+          border-radius: 12px; /* tighter corners */
 
-          transition: background 0.15s ease;
+          transition: background 0.12s ease;
         }
 
         .row:hover {
@@ -69,7 +69,7 @@ export default async function FeedPage() {
         }
 
         .spacer {
-          height: 12px;
+          height: 10px; /* slightly tighter vertical rhythm */
         }
       `}</style>
 
