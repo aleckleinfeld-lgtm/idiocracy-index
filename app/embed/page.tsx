@@ -81,9 +81,8 @@ export default function EmbedPage() {
   const positive = change !== null && change >= 0;
   const lineColor = positive ? "#16a34a" : "#dc2626";
 
-  const gradientTop = positive
-    ? "rgba(22,163,74,0.10)"
-    : "rgba(220,38,38,0.08)";
+  // ✅ Neutral fill (no green/red tint)
+  const gradientTop = "rgba(0,0,0,0.04)";
 
   const baselineValue = useMemo(() => {
     const first = data.find((d) => typeof d.value === "number");
@@ -98,7 +97,7 @@ export default function EmbedPage() {
         html, body {
           margin: 0 !important;
           padding: 0 !important;
-          background: transparent !important;
+          background: #ffffff !important;
           font-family: elza, sans-serif !important;
         }
 
@@ -107,24 +106,19 @@ export default function EmbedPage() {
         }
       `}</style>
 
+      {/* ✅ FULL WHITE BACKGROUND */}
       <div
         className="h-full w-full text-[#111]"
         style={{
           fontFamily: "elza, sans-serif",
-          backgroundColor:
-            change === null
-              ? "#ffffff"
-              : positive
-              ? "#f3fbf6"
-              : "#fdf4f4",
+          backgroundColor: "#ffffff",
         }}
       >
         <div className="flex h-full flex-col px-[18px] py-[18px]">
 
-          {/* TOP ROW */}
+          {/* TOP */}
           <div className="flex items-start justify-between gap-[20px]">
 
-            {/* LEFT SIDE */}
             <div>
               <h1 className="text-[18px] font-medium tracking-tight">
                 Idiocracy Index
@@ -160,7 +154,7 @@ export default function EmbedPage() {
               </div>
             </div>
 
-            {/* RIGHT SIDE — FIXED PILLS */}
+            {/* PILLS */}
             <div
               style={{
                 display: "flex",
@@ -241,7 +235,6 @@ export default function EmbedPage() {
             </ResponsiveContainer>
           </div>
 
-          {/* FOOTNOTE */}
           <div className="text-[9px] text-black/30 mt-[6px]">
             Not investment advice.
           </div>
