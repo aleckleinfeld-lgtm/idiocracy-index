@@ -67,8 +67,8 @@ export default async function FeedPage() {
 
         .headline {
           display: block;
-          font-size: 26px;
-          line-height: 31px;
+          font-size: 30px;
+          line-height: 33px;
           letter-spacing: -0.6px;
           font-weight: 500;
         }
@@ -83,7 +83,7 @@ export default async function FeedPage() {
         }
 
         .spacer {
-          height: 18px;
+          height: 14px;
         }
       `}</style>
 
