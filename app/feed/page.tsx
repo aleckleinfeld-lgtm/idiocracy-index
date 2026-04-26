@@ -83,7 +83,7 @@ export default async function FeedPage() {
         }
 
         .spacer {
-          height: 28px;
+          height: 18px;
         }
       `}</style>
 
