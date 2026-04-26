@@ -48,29 +48,23 @@ export default async function FeedPage() {
           padding-left: 24px;
         }
 
-        .item {
-          position: relative;
-          padding-bottom: 12px;
-        }
-
-        /* Divider line */
-        .item::after {
-          content: "";
-          display: block;
-          width: 100%;
+        .line,
+        .final-line {
           height: 0.5px;
           background: rgba(0,0,0,0.45);
-          margin-top: 12px;
+          width: 100%;
           transition: opacity 0.12s ease;
         }
 
-        /* Hide line BELOW hovered item */
-        .item:hover::after {
+        .item:hover .line {
           opacity: 0;
         }
 
-        /* Hide line ABOVE hovered item (i.e. previous item's line) */
-        .item:hover + .item::after {
+        .item:hover + .item .line {
+          opacity: 0;
+        }
+
+        .item:hover + .final-line {
           opacity: 0;
         }
 
@@ -78,7 +72,7 @@ export default async function FeedPage() {
           display: block;
           color: #000;
           text-decoration: none;
-          padding: 14px 16px;
+          padding: 12px 16px;
           margin-left: -16px;
           border-radius: 12px;
           transition: background 0.12s ease;
@@ -102,7 +96,7 @@ export default async function FeedPage() {
           line-height: 16px;
           letter-spacing: -0.2px;
           color: rgba(0,0,0,0.45);
-          margin-top: 6px;
+          margin-top: 5px;
           font-weight: 400;
         }
       `}</style>
@@ -117,6 +111,8 @@ export default async function FeedPage() {
 
           return (
             <div key={item.id} className="item">
+              <div className="line" />
+
               <a
                 href={link}
                 target="_blank"
@@ -133,6 +129,8 @@ export default async function FeedPage() {
             </div>
           );
         })}
+
+        <div className="final-line" />
       </main>
     </>
   );
