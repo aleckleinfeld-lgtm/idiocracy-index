@@ -121,7 +121,10 @@ export default function EmbedPage() {
       >
         <div className="flex h-full flex-col px-[18px] py-[18px]">
 
+          {/* TOP ROW */}
           <div className="flex items-start justify-between gap-[20px]">
+
+            {/* LEFT SIDE */}
             <div>
               <h1 className="text-[18px] font-medium tracking-tight">
                 Idiocracy Index
@@ -157,22 +160,31 @@ export default function EmbedPage() {
               </div>
             </div>
 
-            {/* 🔥 Updated pills */}
-            <div className="flex flex-wrap justify-end gap-[5px] max-w-[230px] pt-[2px]">
+            {/* RIGHT SIDE — FIXED PILLS */}
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "nowrap",
+                gap: "3px",
+                alignItems: "center",
+              }}
+            >
               {RANGE_OPTIONS.map((r) => (
                 <button
                   key={r}
                   onClick={() => setRange(r)}
-                  className={`text-[9px] font-medium ${
-                    r === range
-                      ? "bg-black text-white"
-                      : "bg-black/5 text-black/60"
-                  }`}
                   style={{
-                    padding: "3px 8px",
-                    borderRadius: "6px", // 👈 less bulbous
+                    fontSize: "8px",
+                    fontWeight: 500,
+                    padding: "3px 6px",
+                    height: "17px",
+                    minWidth: "28px",
+                    borderRadius: "5px",
                     lineHeight: "1",
-                    height: "18px", // 👈 tighter height
+                    background: r === range ? "#000" : "rgba(0,0,0,0.05)",
+                    color: r === range ? "#fff" : "rgba(0,0,0,0.6)",
+                    border: "none",
+                    cursor: "pointer",
                   }}
                 >
                   {r}
@@ -181,6 +193,7 @@ export default function EmbedPage() {
             </div>
           </div>
 
+          {/* CHART */}
           <div className="mt-[16px] flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={data}>
@@ -228,6 +241,7 @@ export default function EmbedPage() {
             </ResponsiveContainer>
           </div>
 
+          {/* FOOTNOTE */}
           <div className="text-[9px] text-black/30 mt-[6px]">
             Not investment advice.
           </div>
