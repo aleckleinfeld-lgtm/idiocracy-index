@@ -34,7 +34,6 @@ export default async function FeedPage() {
 
   return (
     <>
-      {/* ✅ Elza font */}
       <link rel="stylesheet" href="https://use.typekit.net/dkt1lmz.css" />
 
       <style>{`
@@ -49,15 +48,32 @@ export default async function FeedPage() {
           padding-left: 24px;
         }
 
+        .item {
+          position: relative;
+          padding-bottom: 12px;
+        }
+
+        .item::after {
+          content: "";
+          display: block;
+          width: 100%;
+          height: 0.5px;
+          background: rgba(0,0,0,0.45);
+          margin-top: 12px;
+          transition: opacity 0.12s ease;
+        }
+
+        .item:hover::after {
+          opacity: 0;
+        }
+
         .row {
           display: block;
           color: #000;
           text-decoration: none;
-
           padding: 14px 16px;
           margin-left: -16px;
           border-radius: 12px;
-
           transition: background 0.12s ease;
         }
 
@@ -74,16 +90,13 @@ export default async function FeedPage() {
         }
 
         .source {
+          display: block;
           font-size: 13px;
           line-height: 16px;
           letter-spacing: -0.2px;
           color: rgba(0,0,0,0.45);
           margin-top: 6px;
           font-weight: 400;
-        }
-
-        .spacer {
-          height: 12px;
         }
       `}</style>
 
@@ -96,7 +109,7 @@ export default async function FeedPage() {
           if (!headline || !link) return null;
 
           return (
-            <div key={item.id}>
+            <div key={item.id} className="item">
               <a
                 href={link}
                 target="_blank"
@@ -108,14 +121,8 @@ export default async function FeedPage() {
                   <span style={{ marginLeft: 8 }}>→</span>
                 </span>
 
-                {source && (
-                  <span className="source">
-                    {source}
-                  </span>
-                )}
+                {source && <span className="source">{source}</span>}
               </a>
-
-              <div className="spacer" />
             </div>
           );
         })}
