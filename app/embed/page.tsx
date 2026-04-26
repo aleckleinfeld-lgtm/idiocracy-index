@@ -120,10 +120,21 @@ export default function EmbedPage() {
         }}
       >
         <div className="flex h-full flex-col px-[18px] py-[18px]">
+
           <div className="flex items-start justify-between gap-[20px]">
             <div>
               <h1 className="text-[18px] font-medium tracking-tight">
                 Idiocracy Index
+                <span
+                  style={{
+                    fontSize: "10px",
+                    verticalAlign: "super",
+                    marginLeft: 2,
+                    opacity: 0.7,
+                  }}
+                >
+                  ™
+                </span>
               </h1>
 
               <p className="mt-[4px] text-[9px] text-black/45">
@@ -146,18 +157,22 @@ export default function EmbedPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-end gap-[6px] max-w-[250px] pt-[3px]">
+            {/* 🔥 Updated pills */}
+            <div className="flex flex-wrap justify-end gap-[5px] max-w-[230px] pt-[2px]">
               {RANGE_OPTIONS.map((r) => (
                 <button
                   key={r}
                   onClick={() => setRange(r)}
-                  className={`px-[9px] py-[4px] text-[9px] font-medium ${
+                  className={`text-[9px] font-medium ${
                     r === range
                       ? "bg-black text-white"
                       : "bg-black/5 text-black/60"
                   }`}
                   style={{
-                    borderRadius: "10px",
+                    padding: "3px 8px",
+                    borderRadius: "6px", // 👈 less bulbous
+                    lineHeight: "1",
+                    height: "18px", // 👈 tighter height
                   }}
                 >
                   {r}
