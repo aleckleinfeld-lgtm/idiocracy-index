@@ -1,17 +1,11 @@
-import { Manrope } from "next/font/google";
-
 export const dynamic = "force-dynamic";
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  weight: ["500"],
-});
 
 type FeedItem = {
   id: string;
   fields: {
     Summary?: string;
     "Source URL"?: string;
+    "Source Name"?: string;
   };
 };
 
@@ -40,11 +34,15 @@ export default async function FeedPage() {
 
   return (
     <>
+      {/* ✅ Elza font */}
+      <link rel="stylesheet" href="https://use.typekit.net/dkt1lmz.css" />
+
       <style>{`
         html, body {
           margin: 0 !important;
           padding: 0 !important;
           background: transparent !important;
+          font-family: "elza", sans-serif;
         }
 
         .feed {
@@ -55,7 +53,6 @@ export default async function FeedPage() {
           display: block;
           color: #000;
           text-decoration: none;
-          font-weight: 500;
 
           padding: 14px 16px;
           margin-left: -16px;
@@ -68,22 +65,33 @@ export default async function FeedPage() {
           background: rgba(255,255,255,0.95);
         }
 
+        .headline {
+          display: block;
+          font-size: 26px;
+          line-height: 31px;
+          letter-spacing: -0.6px;
+          font-weight: 500;
+        }
+
+        .source {
+          font-size: 13px;
+          line-height: 16px;
+          letter-spacing: -0.2px;
+          color: rgba(0,0,0,0.45);
+          margin-top: 6px;
+          font-weight: 400;
+        }
+
         .spacer {
           height: 28px;
         }
       `}</style>
 
-      <main
-        className={`${manrope.className} feed`}
-        style={{
-          fontSize: "26px",
-          lineHeight: "31px",
-          letterSpacing: "-0.6px",
-        }}
-      >
+      <main className="feed">
         {records.map((item: FeedItem) => {
           const headline = item.fields.Summary;
           const link = item.fields["Source URL"];
+          const source = item.fields["Source Name"];
 
           if (!headline || !link) return null;
 
@@ -95,8 +103,16 @@ export default async function FeedPage() {
                 rel="noreferrer"
                 className="row"
               >
-                {headline}
-                <span style={{ marginLeft: 8 }}>→</span>
+                <span className="headline">
+                  {headline}
+                  <span style={{ marginLeft: 8 }}>→</span>
+                </span>
+
+                {source && (
+                  <span className="source">
+                    {source}
+                  </span>
+                )}
               </a>
 
               <div className="spacer" />
