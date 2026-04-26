@@ -53,6 +53,7 @@ export default async function FeedPage() {
           padding-bottom: 12px;
         }
 
+        /* Divider line */
         .item::after {
           content: "";
           display: block;
@@ -63,7 +64,13 @@ export default async function FeedPage() {
           transition: opacity 0.12s ease;
         }
 
+        /* Hide line BELOW hovered item */
         .item:hover::after {
+          opacity: 0;
+        }
+
+        /* Hide line ABOVE hovered item (i.e. previous item's line) */
+        .item:hover + .item::after {
           opacity: 0;
         }
 
