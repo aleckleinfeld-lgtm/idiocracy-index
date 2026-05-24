@@ -48,12 +48,14 @@ export default async function FeedPage() {
     padding-left: 24px;
   }
 
-  .line,
-  .final-line {
-    height: 0.5px;
-    background: rgba(0,0,0,0.45);
-    width: 100%;
-    transition: opacity 0.12s ease;
+.line,
+.final-line {
+  height: 0.5px;
+  background: rgba(0,0,0,0.45);
+  width: calc(100% + 16px);
+  margin-left: -16px;
+  transition: opacity 0.12s ease;
+  
   }
 
   .item:hover .line {
@@ -127,9 +129,10 @@ export default async function FeedPage() {
       margin-top: 4px;
     }
 
-    .line,
-    .final-line {
-      height: 0.5px;
+.line,
+.final-line {
+  width: calc(100% + 12px);
+  margin-left: -12px;
     }
   }
 `}</style>
