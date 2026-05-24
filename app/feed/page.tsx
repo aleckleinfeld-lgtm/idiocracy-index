@@ -53,7 +53,7 @@ export default async function FeedPage() {
   height: 0.5px;
   background: rgba(0,0,0,0.45);
 
-  width: calc(100% - 16px);
+  width: calc(100% - 22px);
   margin-left: 8px;
 
   transition: opacity 0.12s ease;
@@ -140,7 +140,7 @@ export default async function FeedPage() {
 
 .line,
 .final-line {
-  width: calc(100% - 12px);
+  width: calc(100% - 18px);
   margin-left: 6px;
 }
   }
