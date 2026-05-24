@@ -102,7 +102,7 @@ export default async function FeedPage() {
 
   /* MOBILE */
 
-  @media (max-width: 768px) {
+  @media (max-width: 480px) {
 
     .feed {
       padding-left: 12px;
