@@ -52,11 +52,9 @@ export default async function FeedPage() {
 .final-line {
   height: 0.5px;
   background: rgba(0,0,0,0.45);
-  width: calc(100% - 24px);
-  margin-left: 12px;
+  width: 100%;
   transition: opacity 0.12s ease;
-  
-  }
+}
 
   .item:hover .line {
     opacity: 0;
@@ -70,15 +68,20 @@ export default async function FeedPage() {
     opacity: 0;
   }
 
-  .row {
-    display: block;
-    color: #000;
-    text-decoration: none;
-    padding: 12px 16px;
-    margin-left: -16px;
-    border-radius: 12px;
-    transition: background 0.12s ease;
-  }
+.row {
+  display: block;
+  color: #000;
+  text-decoration: none;
+
+  padding: 12px 16px;
+
+  margin-left: -8px;
+  margin-right: 8px;
+
+  border-radius: 12px;
+
+  transition: background 0.12s ease;
+}
 
   .row:hover {
     background: rgba(255,255,255,0.95);
@@ -111,11 +114,14 @@ export default async function FeedPage() {
       padding-right: 12px;
     }
 
-    .row {
-      padding: 10px 12px;
-      margin-left: -12px;
-      border-radius: 10px;
-    }
+.row {
+  padding: 10px 12px;
+
+  margin-left: -6px;
+  margin-right: 6px;
+
+  border-radius: 10px;
+}
 
     .headline {
       font-size: 18px;
@@ -131,8 +137,10 @@ export default async function FeedPage() {
 
 .line,
 .final-line {
-  width: calc(100% - 20px);
-  margin-left: 10px;
+  height: 0.5px;
+  background: rgba(0,0,0,0.45);
+  width: 100%;
+  transition: opacity 0.12s ease;
 }
   }
 `}</style>
