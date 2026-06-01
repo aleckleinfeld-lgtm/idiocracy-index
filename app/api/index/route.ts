@@ -191,18 +191,6 @@ function findLatestValue(points: YahooPoint[]) {
   return [...points].reverse().find((p) => p.close > 0)?.close ?? null;
 }
 
-function nearestBaseValue(baseSeries: YahooPoint[], timestamp: number) {
-  const target = timestamp;
-  let closest: YahooPoint | null = null;
-
-  for (const point of baseSeries) {
-    if (point.timestamp <= target) closest = point;
-    else break;
-  }
-
-  return closest?.close ?? null;
-}
-
 export async function GET(req: NextRequest) {
   const rawRange = (req.nextUrl.searchParams.get("range") || "6M").toUpperCase() as RangeKey;
 
@@ -235,7 +223,6 @@ export async function GET(req: NextRequest) {
     }
 
     const baseValues = baseSeries.map(findBaseValue);
-
     const latestValues = baseSeries.map(findLatestValue);
 
     let currentTotal = 0;
@@ -269,7 +256,7 @@ export async function GET(req: NextRequest) {
 
         for (let i = 0; i < rangeMaps.length; i += 1) {
           const value = rangeMaps[i].get(timestamp);
-          const base = nearestBaseValue(baseSeries[i], timestamp);
+          const base = baseValues[i];
 
           if (
             typeof value === "number" &&
