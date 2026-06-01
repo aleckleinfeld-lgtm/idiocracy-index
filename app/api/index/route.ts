@@ -3,23 +3,37 @@ import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 const TICKERS = [
-  "COST",
-  "HRB",
-  "SBUX",
+ "COST",
+  "WMT",
+  "TGT",
+  "AMZN",
+  "CROX",
+  "PDD",
+
+  "DASH",
+  "UBER",
+
+  "NFLX",
+  "RBLX",
+  "U",
   "FOXA",
+  "META",
+  "TKO",
+  "KLAR",
+
+  "MCD",
+  "YUM",
+  "SBUX",
   "KO",
   "PEP",
   "MNST",
-  "RBLX",
-  "U",
-  "VUZI",
-  "MCD",
-  "YUM",
-  "DASH",
-  "UBER",
+
+  "PLTR",
+  "TSLA",
+  "F",
+
   "WM",
   "RSG",
-  "PLTR",
 ] as const;
 
 type RangeKey = "1D" | "1W" | "1M" | "3M" | "6M" | "YTD" | "1Y" | "ALL";
