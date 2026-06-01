@@ -63,8 +63,8 @@ function getYahooParams(range: RangeKey) {
       return { range: "ytd", interval: "1d" };
     case "1Y":
       return { range: "1y", interval: "1d" };
-    case "ALL":
-      return { range: "max", interval: "1wk" };
+case "ALL":
+  return { range: "ytd", interval: "1d" };
     default:
       return { range: "6mo", interval: "1d" };
   }
