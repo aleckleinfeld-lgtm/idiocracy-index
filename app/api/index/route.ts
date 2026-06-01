@@ -239,7 +239,6 @@ export async function GET(req: NextRequest) {
     }
 
     const current = currentCount > 0 ? (currentTotal / currentCount) * 100 : null;
-    const change = current !== null ? current - 100 : null;
 
     const allTimestamps = Array.from(
       new Set(rangeSeries.flatMap((series) => series.map((point) => point.timestamp)))
@@ -282,6 +281,16 @@ export async function GET(req: NextRequest) {
       .filter((point): point is SeriesPoint => point !== null);
 
     const cleanedActualSeries = removeBadTail(rawSeries);
+
+    const firstRangeValue = cleanedActualSeries[0]?.value;
+    const lastRangeValue = cleanedActualSeries[cleanedActualSeries.length - 1]?.value;
+
+    const change =
+      typeof firstRangeValue === "number" &&
+      typeof lastRangeValue === "number" &&
+      firstRangeValue !== 0
+        ? ((lastRangeValue - firstRangeValue) / firstRangeValue) * 100
+        : null;
 
     return NextResponse.json({
       series: cleanedActualSeries,
