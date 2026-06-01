@@ -2,17 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+const BASE_DATE = "2026-01-01";
+
 const TICKERS = [
- "COST",
+  "COST",
   "WMT",
   "TGT",
   "AMZN",
   "CROX",
   "PDD",
-
   "DASH",
   "UBER",
-
   "NFLX",
   "RBLX",
   "U",
@@ -20,18 +20,15 @@ const TICKERS = [
   "META",
   "TKO",
   "KLAR",
-
   "MCD",
   "YUM",
   "SBUX",
   "KO",
   "PEP",
   "MNST",
-
   "PLTR",
   "TSLA",
   "F",
-
   "WM",
   "RSG",
 ] as const;
@@ -84,55 +81,12 @@ function formatLabel(timestamp: number, range: RangeKey) {
     });
   }
 
-  if (range === "1W") {
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      timeZone: "America/New_York",
-    });
-  }
-
-  if (range === "ALL") {
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      timeZone: "America/New_York",
-    });
-  }
-
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
-    year: range === "1Y" || range === "YTD" ? "2-digit" : undefined,
+    year: range === "1Y" || range === "YTD" || range === "ALL" ? "2-digit" : undefined,
     timeZone: "America/New_York",
   });
-}
-
-function buildMarketDaySlots() {
-  const slots: Array<{ label: string }> = [];
-
-  let hour = 9;
-  let minute = 30;
-
-  while (hour < 16 || (hour === 16 && minute === 0)) {
-    const key = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-
-    const display = new Date(`2026-01-01T${key}:00`).toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-    });
-
-    slots.push({ label: display });
-
-    minute += 5;
-    if (minute >= 60) {
-      hour += 1;
-      minute -= 60;
-    }
-  }
-
-  return slots;
 }
 
 async function fetchTickerSeries(ticker: string, rangeKey: RangeKey): Promise<YahooPoint[]> {
@@ -148,12 +102,9 @@ async function fetchTickerSeries(ticker: string, rangeKey: RangeKey): Promise<Ya
     },
   });
 
-  if (!res.ok) {
-    throw new Error(`Yahoo request failed for ${ticker}`);
-  }
+  if (!res.ok) throw new Error(`Yahoo request failed for ${ticker}`);
 
   const json = await res.json();
-
   const result = json?.chart?.result?.[0];
   const timestamps: number[] = result?.timestamp || [];
   const closes: Array<number | null> = result?.indicators?.quote?.[0]?.close || [];
@@ -172,22 +123,43 @@ async function fetchTickerSeries(ticker: string, rangeKey: RangeKey): Promise<Ya
   return points;
 }
 
-function intersectTimestamps(seriesList: YahooPoint[][]) {
-  if (!seriesList.length) return [];
+async function fetchBaseSeries(ticker: string): Promise<YahooPoint[]> {
+  const period1 = Math.floor(new Date(`${BASE_DATE}T00:00:00-05:00`).getTime() / 1000);
+  const period2 = Math.floor(Date.now() / 1000);
 
-  let common = new Set(seriesList[0].map((p) => p.timestamp));
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?period1=${period1}&period2=${period2}&interval=1d&includePrePost=false&events=div%2Csplits`;
 
-  for (let i = 1; i < seriesList.length; i += 1) {
-    const current = new Set(seriesList[i].map((p) => p.timestamp));
-    common = new Set([...common].filter((ts) => current.has(ts)));
+  const res = await fetch(url, {
+    cache: "no-store",
+    headers: {
+      "User-Agent": "Mozilla/5.0",
+      Accept: "application/json",
+    },
+  });
+
+  if (!res.ok) throw new Error(`Yahoo base request failed for ${ticker}`);
+
+  const json = await res.json();
+  const result = json?.chart?.result?.[0];
+  const timestamps: number[] = result?.timestamp || [];
+  const closes: Array<number | null> = result?.indicators?.quote?.[0]?.close || [];
+
+  const points: YahooPoint[] = [];
+
+  for (let i = 0; i < timestamps.length; i += 1) {
+    const timestamp = timestamps[i];
+    const close = closes[i];
+
+    if (typeof timestamp === "number" && typeof close === "number" && Number.isFinite(close)) {
+      points.push({ timestamp, close });
+    }
   }
 
-  return [...common].sort((a, b) => a - b);
+  return points;
 }
 
 function removeBadTail(points: SeriesPoint[]) {
   if (points.length < 3) return points;
-
   const cleaned = [...points];
 
   while (cleaned.length >= 3) {
@@ -200,7 +172,6 @@ function removeBadTail(points: SeriesPoint[]) {
     }
 
     const move = Math.abs((last - prev) / prev);
-
     if (move > 0.15) {
       cleaned.pop();
       continue;
@@ -212,89 +183,24 @@ function removeBadTail(points: SeriesPoint[]) {
   return cleaned;
 }
 
-function isNonNullSeriesPoint(point: SeriesPoint | null): point is SeriesPoint {
-  return point !== null;
+function findBaseValue(points: YahooPoint[]) {
+  return points.find((p) => p.close > 0)?.close ?? null;
 }
 
-function buildIntradaySeries(seriesList: YahooPoint[][]): {
-  series: SeriesPoint[];
-  current: number | null;
-  change: number | null;
-} {
-  const slots = buildMarketDaySlots();
-  const normalizedSeries = seriesList
-    .map((points) => {
-      const first = points.find((p) => typeof p.close === "number" && p.close > 0);
-      if (!first) return [];
-      return points.map((p) => ({
-        timestamp: p.timestamp,
-        value: (p.close / first.close) * 100,
-      }));
-    })
-    .filter((arr) => arr.length > 0);
+function findLatestValue(points: YahooPoint[]) {
+  return [...points].reverse().find((p) => p.close > 0)?.close ?? null;
+}
 
-  if (normalizedSeries.length < 2) {
-    return { series: [], current: null, change: null };
+function nearestBaseValue(baseSeries: YahooPoint[], timestamp: number) {
+  const target = timestamp;
+  let closest: YahooPoint | null = null;
+
+  for (const point of baseSeries) {
+    if (point.timestamp <= target) closest = point;
+    else break;
   }
 
-  const maxLength = Math.max(...normalizedSeries.map((arr) => arr.length));
-
-  const actualSeries: SeriesPoint[] = [];
-
-  for (let i = 0; i < maxLength; i += 1) {
-    let total = 0;
-    let count = 0;
-    let timestamp: number | null = null;
-
-    for (const tickerSeries of normalizedSeries) {
-      const point = tickerSeries[i];
-      if (point && typeof point.value === "number") {
-        total += point.value;
-        count += 1;
-        if (timestamp === null) timestamp = point.timestamp;
-      }
-    }
-
-    if (count >= 2) {
-      actualSeries.push({
-        date: timestamp ? new Date(timestamp * 1000).toISOString() : "",
-        label: timestamp ? formatLabel(timestamp, "1D") : "",
-        timestamp,
-        value: total / count,
-      });
-    }
-  }
-
-  const cleanedActualSeries = removeBadTail(actualSeries);
-
-  if (cleanedActualSeries.length < 2) {
-    return { series: [], current: null, change: null };
-  }
-
-  const expandedSeries: SeriesPoint[] = slots.map((slot, index) => {
-    const point = cleanedActualSeries[index];
-    return {
-      date: slot.label,
-      label: slot.label,
-      timestamp: point?.timestamp ?? null,
-      value: point?.value ?? null,
-    };
-  });
-
-  const firstActual = cleanedActualSeries[0].value;
-  const currentActual = cleanedActualSeries[cleanedActualSeries.length - 1].value;
-  const change =
-    typeof firstActual === "number" &&
-    typeof currentActual === "number" &&
-    firstActual !== 0
-      ? ((currentActual - firstActual) / firstActual) * 100
-      : null;
-
-  return {
-    series: expandedSeries,
-    current: currentActual,
-    change,
-  };
+  return closest?.close ?? null;
 }
 
 export async function GET(req: NextRequest) {
@@ -305,60 +211,65 @@ export async function GET(req: NextRequest) {
     : "6M";
 
   try {
-    const settled = await Promise.allSettled(
-      TICKERS.map((ticker) => fetchTickerSeries(ticker, range))
-    );
+    const [rangeSettled, baseSettled] = await Promise.all([
+      Promise.allSettled(TICKERS.map((ticker) => fetchTickerSeries(ticker, range))),
+      Promise.allSettled(TICKERS.map((ticker) => fetchBaseSeries(ticker))),
+    ]);
 
-    const validSeries = settled
+    const rangeSeries = rangeSettled
       .filter(
         (result): result is PromiseFulfilledResult<YahooPoint[]> =>
           result.status === "fulfilled" && result.value.length > 1
       )
       .map((result) => result.value);
 
-    if (validSeries.length < 2) {
-      return NextResponse.json({
-        series: [],
-        current: null,
-        change: null,
-      });
+    const baseSeries = baseSettled
+      .filter(
+        (result): result is PromiseFulfilledResult<YahooPoint[]> =>
+          result.status === "fulfilled" && result.value.length > 1
+      )
+      .map((result) => result.value);
+
+    if (rangeSeries.length < 2 || baseSeries.length < 2) {
+      return NextResponse.json({ series: [], current: null, change: null });
     }
 
-    if (range === "1D") {
-      const intraday = buildIntradaySeries(validSeries);
-      return NextResponse.json(intraday);
+    const baseValues = baseSeries.map(findBaseValue);
+
+    const latestValues = baseSeries.map(findLatestValue);
+
+    let currentTotal = 0;
+    let currentCount = 0;
+
+    for (let i = 0; i < baseSeries.length; i += 1) {
+      const base = baseValues[i];
+      const latest = latestValues[i];
+
+      if (typeof base === "number" && typeof latest === "number" && base > 0) {
+        currentTotal += latest / base;
+        currentCount += 1;
+      }
     }
 
-    const commonTimestamps = intersectTimestamps(validSeries);
+    const current = currentCount > 0 ? (currentTotal / currentCount) * 100 : null;
+    const change = current !== null ? current - 100 : null;
 
-    if (commonTimestamps.length < 2) {
-      return NextResponse.json({
-        series: [],
-        current: null,
-        change: null,
-      });
-    }
+    const allTimestamps = Array.from(
+      new Set(rangeSeries.flatMap((series) => series.map((point) => point.timestamp)))
+    ).sort((a, b) => a - b);
 
-    const maps = validSeries.map(
+    const rangeMaps = rangeSeries.map(
       (series) => new Map(series.map((point) => [point.timestamp, point.close]))
     );
 
-    const baseValues = maps.map((map) => {
-      for (const ts of commonTimestamps) {
-        const value = map.get(ts);
-        if (typeof value === "number" && value > 0) return value;
-      }
-      return null;
-    });
-
-    const rawSeries = commonTimestamps
+    const rawSeries = allTimestamps
       .map((timestamp): SeriesPoint | null => {
         let total = 0;
         let count = 0;
 
-        for (let i = 0; i < maps.length; i += 1) {
-          const value = maps[i].get(timestamp);
-          const base = baseValues[i];
+        for (let i = 0; i < rangeMaps.length; i += 1) {
+          const value = rangeMaps[i].get(timestamp);
+          const base = nearestBaseValue(baseSeries[i], timestamp);
 
           if (
             typeof value === "number" &&
@@ -381,39 +292,17 @@ export async function GET(req: NextRequest) {
           value: (total / count) * 100,
         };
       })
-      .filter(isNonNullSeriesPoint);
+      .filter((point): point is SeriesPoint => point !== null);
 
     const cleanedActualSeries = removeBadTail(rawSeries);
 
-    if (cleanedActualSeries.length < 2) {
-      return NextResponse.json({
-        series: [],
-        current: null,
-        change: null,
-      });
-    }
-
-    const firstActual = cleanedActualSeries[0].value;
-    const currentActual = cleanedActualSeries[cleanedActualSeries.length - 1].value;
-    const change =
-      typeof firstActual === "number" &&
-      typeof currentActual === "number" &&
-      firstActual !== 0
-        ? ((currentActual - firstActual) / firstActual) * 100
-        : null;
-
     return NextResponse.json({
       series: cleanedActualSeries,
-      current: currentActual,
+      current,
       change,
     });
   } catch (error) {
     console.error("Index API failed:", error);
-
-    return NextResponse.json({
-      series: [],
-      current: null,
-      change: null,
-    });
+    return NextResponse.json({ series: [], current: null, change: null });
   }
 }
