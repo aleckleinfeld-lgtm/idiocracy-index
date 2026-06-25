@@ -63,8 +63,8 @@ function getYahooParams(range: RangeKey) {
       return { range: "ytd", interval: "1d" };
     case "1Y":
       return { range: "1y", interval: "1d" };
-case "ALL":
-  return { range: "ytd", interval: "1d" };
+    case "ALL":
+      return { range: "ytd", interval: "1d" };
     default:
       return { range: "6mo", interval: "1d" };
   }
@@ -191,6 +191,20 @@ function findLatestValue(points: YahooPoint[]) {
   return [...points].reverse().find((p) => p.close > 0)?.close ?? null;
 }
 
+function getLastKnownClose(points: YahooPoint[], timestamp: number) {
+  let last: number | null = null;
+
+  for (const point of points) {
+    if (point.timestamp <= timestamp) {
+      last = point.close;
+    } else {
+      break;
+    }
+  }
+
+  return last;
+}
+
 export async function GET(req: NextRequest) {
   const rawRange = (req.nextUrl.searchParams.get("range") || "6M").toUpperCase() as RangeKey;
 
@@ -244,17 +258,13 @@ export async function GET(req: NextRequest) {
       new Set(rangeSeries.flatMap((series) => series.map((point) => point.timestamp)))
     ).sort((a, b) => a - b);
 
-    const rangeMaps = rangeSeries.map(
-      (series) => new Map(series.map((point) => [point.timestamp, point.close]))
-    );
-
     const rawSeries = allTimestamps
       .map((timestamp): SeriesPoint | null => {
         let total = 0;
         let count = 0;
 
-        for (let i = 0; i < rangeMaps.length; i += 1) {
-          const value = rangeMaps[i].get(timestamp);
+        for (let i = 0; i < rangeSeries.length; i += 1) {
+          const value = getLastKnownClose(rangeSeries[i], timestamp);
           const base = baseValues[i];
 
           if (
