@@ -298,12 +298,12 @@ export default function EmbedPage() {
             display: none;
           }
 
-.range-select-wrap {
-  display: flex;
-  justify-content: flex-end;
-  width: auto;
-  flex-shrink: 0;
-  order: 0;
+.range-select {
+  width: 72px;
+  height: 34px;
+  padding: 0 26px 0 12px;
+  font-size: 11px;
+  border-radius: 12px;
 }
 
           .chart-wrap {
