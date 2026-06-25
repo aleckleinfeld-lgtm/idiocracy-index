@@ -1,314 +1,248 @@
-import { NextRequest, NextResponse } from "next/server";
+"use client";
 
-export const dynamic = "force-dynamic";
-
-const BASE_DATE = "2026-01-01";
-
-const TICKERS = [
-  "COST",
-  "WMT",
-  "TGT",
-  "AMZN",
-  "CROX",
-  "PDD",
-  "DASH",
-  "UBER",
-  "NFLX",
-  "RBLX",
-  "U",
-  "FOXA",
-  "META",
-  "TKO",
-  "KLAR",
-  "MCD",
-  "YUM",
-  "SBUX",
-  "KO",
-  "PEP",
-  "MNST",
-  "PLTR",
-  "TSLA",
-  "F",
-  "WM",
-  "RSG",
-] as const;
+import { useEffect, useMemo, useState } from "react";
+import {
+  Area,
+  ComposedChart,
+  Line,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 type RangeKey = "1D" | "1W" | "1M" | "3M" | "6M" | "YTD" | "1Y" | "ALL";
 
-type YahooPoint = {
-  timestamp: number;
-  close: number;
-};
-
-type SeriesPoint = {
+type Point = {
   date: string;
+  value: number | null;
   label: string;
   timestamp: number | null;
-  value: number | null;
 };
 
-function getYahooParams(range: RangeKey) {
-  switch (range) {
-    case "1D":
-      return { range: "1d", interval: "5m" };
-    case "1W":
-      return { range: "5d", interval: "30m" };
-    case "1M":
-      return { range: "1mo", interval: "1d" };
-    case "3M":
-      return { range: "3mo", interval: "1d" };
-    case "6M":
-      return { range: "6mo", interval: "1d" };
-    case "YTD":
-      return { range: "ytd", interval: "1d" };
-    case "1Y":
-      return { range: "1y", interval: "1d" };
-    case "ALL":
-      return { range: "ytd", interval: "1d" };
-    default:
-      return { range: "6mo", interval: "1d" };
-  }
+type ApiResponse = {
+  series: Point[];
+  current: number | null;
+  change: number | null;
+};
+
+const RANGE_OPTIONS: RangeKey[] = ["1D", "1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"];
+
+function TinyTooltip({ active, payload, label, color }: any) {
+  if (!active || !payload?.length) return null;
+
+  const value =
+    typeof payload[0]?.value === "number"
+      ? payload[0].value.toFixed(2)
+      : "—";
+
+  return (
+    <div
+      style={{
+        background: "#ffffff",
+        border: "1px solid rgba(0,0,0,0.08)",
+        borderRadius: 8,
+        padding: "6px 8px",
+        boxShadow: "0 6px 20px rgba(0,0,0,0.08)",
+        fontFamily: "elza, sans-serif",
+      }}
+    >
+      <div style={{ fontSize: 10, color: "rgba(0,0,0,0.45)" }}>{label}</div>
+      <div style={{ fontSize: 11, fontWeight: 700, color }}>{value}</div>
+    </div>
+  );
 }
 
-function formatLabel(timestamp: number, range: RangeKey) {
-  const date = new Date(timestamp * 1000);
+export default function EmbedPage() {
+  const [range, setRange] = useState<RangeKey>("1D");
+  const [data, setData] = useState<Point[]>([]);
+  const [current, setCurrent] = useState<number | null>(null);
+  const [change, setChange] = useState<number | null>(null);
 
-  if (range === "1D") {
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      timeZone: "America/New_York",
-    });
-  }
+  useEffect(() => {
+    async function load() {
+      const res = await fetch(`/api/index?range=${range}`, {
+        cache: "no-store",
+      });
 
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: range === "1Y" || range === "YTD" || range === "ALL" ? "2-digit" : undefined,
-    timeZone: "America/New_York",
-  });
-}
+      const json: ApiResponse = await res.json();
 
-async function fetchTickerSeries(ticker: string, rangeKey: RangeKey): Promise<YahooPoint[]> {
-  const { range, interval } = getYahooParams(rangeKey);
-
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}&includePrePost=false&events=div%2Csplits`;
-
-  const res = await fetch(url, {
-    cache: "no-store",
-    headers: {
-      "User-Agent": "Mozilla/5.0",
-      Accept: "application/json",
-    },
-  });
-
-  if (!res.ok) throw new Error(`Yahoo request failed for ${ticker}`);
-
-  const json = await res.json();
-  const result = json?.chart?.result?.[0];
-  const timestamps: number[] = result?.timestamp || [];
-  const closes: Array<number | null> = result?.indicators?.quote?.[0]?.close || [];
-
-  const points: YahooPoint[] = [];
-
-  for (let i = 0; i < timestamps.length; i += 1) {
-    const timestamp = timestamps[i];
-    const close = closes[i];
-
-    if (typeof timestamp === "number" && typeof close === "number" && Number.isFinite(close)) {
-      points.push({ timestamp, close });
-    }
-  }
-
-  return points;
-}
-
-async function fetchBaseSeries(ticker: string): Promise<YahooPoint[]> {
-  const period1 = Math.floor(new Date(`${BASE_DATE}T00:00:00-05:00`).getTime() / 1000);
-  const period2 = Math.floor(Date.now() / 1000);
-
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?period1=${period1}&period2=${period2}&interval=1d&includePrePost=false&events=div%2Csplits`;
-
-  const res = await fetch(url, {
-    cache: "no-store",
-    headers: {
-      "User-Agent": "Mozilla/5.0",
-      Accept: "application/json",
-    },
-  });
-
-  if (!res.ok) throw new Error(`Yahoo base request failed for ${ticker}`);
-
-  const json = await res.json();
-  const result = json?.chart?.result?.[0];
-  const timestamps: number[] = result?.timestamp || [];
-  const closes: Array<number | null> = result?.indicators?.quote?.[0]?.close || [];
-
-  const points: YahooPoint[] = [];
-
-  for (let i = 0; i < timestamps.length; i += 1) {
-    const timestamp = timestamps[i];
-    const close = closes[i];
-
-    if (typeof timestamp === "number" && typeof close === "number" && Number.isFinite(close)) {
-      points.push({ timestamp, close });
-    }
-  }
-
-  return points;
-}
-
-function removeBadTail(points: SeriesPoint[]) {
-  if (points.length < 3) return points;
-  const cleaned = [...points];
-
-  while (cleaned.length >= 3) {
-    const last = cleaned[cleaned.length - 1].value;
-    const prev = cleaned[cleaned.length - 2].value;
-
-    if (typeof last !== "number" || typeof prev !== "number" || prev === 0) {
-      cleaned.pop();
-      continue;
+      setData(json.series || []);
+      setCurrent(json.current ?? null);
+      setChange(json.change ?? null);
     }
 
-    const move = Math.abs((last - prev) / prev);
-    if (move > 0.15) {
-      cleaned.pop();
-      continue;
-    }
+    load();
+    const i = setInterval(load, 60000);
+    return () => clearInterval(i);
+  }, [range]);
 
-    break;
-  }
+  const positive = change !== null && change >= 0;
+  const lineColor = positive ? "#16a34a" : "#dc2626";
 
-  return cleaned;
-}
+  const gradientTop = "rgba(0,0,0,0.04)";
 
-function findBaseValue(points: YahooPoint[]) {
-  return points.find((p) => p.close > 0)?.close ?? null;
-}
+  const baselineValue = useMemo(() => {
+    const first = data.find((d) => typeof d.value === "number");
+    return first?.value ?? null;
+  }, [data]);
 
-function findLatestValue(points: YahooPoint[]) {
-  return [...points].reverse().find((p) => p.close > 0)?.close ?? null;
-}
+  const baselineLabel = range === "1D" ? "Open" : "Range start";
 
-function getLastKnownClose(points: YahooPoint[], timestamp: number) {
-  let last: number | null = null;
+  return (
+    <>
+      <style>{`
+        @import url("https://use.typekit.net/dkt1lmz.css");
 
-  for (const point of points) {
-    if (point.timestamp <= timestamp) {
-      last = point.close;
-    } else {
-      break;
-    }
-  }
-
-  return last;
-}
-
-export async function GET(req: NextRequest) {
-  const rawRange = (req.nextUrl.searchParams.get("range") || "6M").toUpperCase() as RangeKey;
-
-  const range: RangeKey = ["1D", "1W", "1M", "3M", "6M", "YTD", "1Y", "ALL"].includes(rawRange)
-    ? rawRange
-    : "6M";
-
-  try {
-    const [rangeSettled, baseSettled] = await Promise.all([
-      Promise.allSettled(TICKERS.map((ticker) => fetchTickerSeries(ticker, range))),
-      Promise.allSettled(TICKERS.map((ticker) => fetchBaseSeries(ticker))),
-    ]);
-
-    const rangeSeries = rangeSettled
-      .filter(
-        (result): result is PromiseFulfilledResult<YahooPoint[]> =>
-          result.status === "fulfilled" && result.value.length > 1
-      )
-      .map((result) => result.value);
-
-    const baseSeries = baseSettled
-      .filter(
-        (result): result is PromiseFulfilledResult<YahooPoint[]> =>
-          result.status === "fulfilled" && result.value.length > 1
-      )
-      .map((result) => result.value);
-
-    if (rangeSeries.length < 2 || baseSeries.length < 2) {
-      return NextResponse.json({ series: [], current: null, change: null });
-    }
-
-    const baseValues = baseSeries.map(findBaseValue);
-    const latestValues = baseSeries.map(findLatestValue);
-
-    let currentTotal = 0;
-    let currentCount = 0;
-
-    for (let i = 0; i < baseSeries.length; i += 1) {
-      const base = baseValues[i];
-      const latest = latestValues[i];
-
-      if (typeof base === "number" && typeof latest === "number" && base > 0) {
-        currentTotal += latest / base;
-        currentCount += 1;
-      }
-    }
-
-    const current = currentCount > 0 ? (currentTotal / currentCount) * 100 : null;
-
-    const allTimestamps = Array.from(
-      new Set(rangeSeries.flatMap((series) => series.map((point) => point.timestamp)))
-    ).sort((a, b) => a - b);
-
-    const rawSeries = allTimestamps
-      .map((timestamp): SeriesPoint | null => {
-        let total = 0;
-        let count = 0;
-
-        for (let i = 0; i < rangeSeries.length; i += 1) {
-          const value = getLastKnownClose(rangeSeries[i], timestamp);
-          const base = baseValues[i];
-
-          if (
-            typeof value === "number" &&
-            typeof base === "number" &&
-            Number.isFinite(value) &&
-            Number.isFinite(base) &&
-            base > 0
-          ) {
-            total += value / base;
-            count += 1;
-          }
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          background: #ffffff !important;
+          font-family: elza, sans-serif !important;
         }
 
-        if (count < 2) return null;
+        button {
+          font-family: elza, sans-serif !important;
+        }
+      `}</style>
 
-        return {
-          date: new Date(timestamp * 1000).toISOString(),
-          label: formatLabel(timestamp, range),
-          timestamp,
-          value: (total / count) * 100,
-        };
-      })
-      .filter((point): point is SeriesPoint => point !== null);
+      <div
+        className="h-full w-full text-[#111]"
+        style={{
+          fontFamily: "elza, sans-serif",
+          backgroundColor: "#ffffff",
+        }}
+      >
+        <div className="flex h-full flex-col px-[18px] py-[18px]">
 
-    const cleanedActualSeries = removeBadTail(rawSeries);
+          <div className="flex items-start justify-between gap-[20px]">
+            <div>
+              <h1 className="text-[18px] font-medium tracking-tight">
+                Idiocracy Index
+                <span
+                  style={{
+                    fontSize: "10px",
+                    verticalAlign: "super",
+                    marginLeft: 2,
+                    opacity: 0.7,
+                  }}
+                >
+                  ™
+                </span>
+              </h1>
 
-    const firstRangeValue = cleanedActualSeries[0]?.value;
-    const lastRangeValue = cleanedActualSeries[cleanedActualSeries.length - 1]?.value;
+              <p className="mt-[4px] text-[9px] text-black/45">
+                A live index of convenience, consumption, and decline.
+              </p>
 
-    const change =
-      typeof firstRangeValue === "number" &&
-      typeof lastRangeValue === "number" &&
-      firstRangeValue !== 0
-        ? ((lastRangeValue - firstRangeValue) / firstRangeValue) * 100
-        : null;
+              <div className="mt-[8px] flex items-end gap-[10px]">
+                <div className="text-[36px] font-bold leading-none tracking-[-1.2px]">
+                  {current !== null ? current.toFixed(2) : "—"}
+                </div>
 
-    return NextResponse.json({
-      series: cleanedActualSeries,
-      current,
-      change,
-    });
-  } catch (error) {
-    console.error("Index API failed:", error);
-    return NextResponse.json({ series: [], current: null, change: null });
-  }
+                <div
+                  className="text-[12px] font-medium pb-[5px]"
+                  style={{ color: lineColor }}
+                >
+                  {change !== null
+                    ? `${change >= 0 ? "+" : ""}${change.toFixed(2)}% ${range}`
+                    : "—"}
+                </div>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "nowrap",
+                gap: "3px",
+                alignItems: "center",
+              }}
+            >
+              {RANGE_OPTIONS.map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRange(r)}
+                  style={{
+                    fontSize: "8px",
+                    fontWeight: 500,
+                    padding: "3px 6px",
+                    height: "17px",
+                    minWidth: "28px",
+                    borderRadius: "5px",
+                    lineHeight: "1",
+                    background: r === range ? "#000" : "rgba(0,0,0,0.05)",
+                    color: r === range ? "#fff" : "rgba(0,0,0,0.6)",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-[16px] flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={data}>
+                <defs>
+                  <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={gradientTop} />
+                    <stop offset="100%" stopColor="transparent" />
+                  </linearGradient>
+                </defs>
+
+                <XAxis dataKey="label" hide />
+                <YAxis hide domain={["dataMin", "dataMax"]} />
+
+                {baselineValue && (
+                  <ReferenceLine
+                    y={baselineValue}
+                    stroke="rgba(0,0,0,0.1)"
+                    strokeDasharray="3 5"
+                    label={{
+                      value: baselineLabel,
+                      position: "right",
+                      fill: "rgba(0,0,0,0.35)",
+                      fontSize: 9,
+                      fontFamily: "elza, sans-serif",
+                    }}
+                  />
+                )}
+
+                <Tooltip
+                  cursor={{ stroke: "rgba(0,0,0,0.12)", strokeWidth: 1 }}
+                  isAnimationActive={false}
+                  content={<TinyTooltip color={lineColor} />}
+                />
+
+                <Area
+                  type="monotone"
+                  dataKey="value"
+                  fill="url(#fill)"
+                  stroke="none"
+                  isAnimationActive={false}
+                />
+
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke={lineColor}
+                  strokeWidth={1.4}
+                  dot={false}
+                  isAnimationActive={false}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="text-[9px] text-black/30 mt-[6px]">
+            Not investment advice.
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
