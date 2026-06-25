@@ -256,10 +256,12 @@ export default function EmbedPage() {
             padding: 22px 20px 18px;
           }
 
-          .top {
-            flex-direction: column;
-            gap: 14px;
-          }
+  .top {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
 
           .title {
             font-size: 26px;
@@ -296,12 +298,13 @@ export default function EmbedPage() {
             display: none;
           }
 
-          .range-select-wrap {
-            display: flex;
-            justify-content: flex-end;
-            width: 100%;
-            order: -1;
-          }
+.range-select-wrap {
+  display: flex;
+  justify-content: flex-end;
+  width: auto;
+  flex-shrink: 0;
+  order: 0;
+}
 
           .chart-wrap {
             margin-top: 24px;
