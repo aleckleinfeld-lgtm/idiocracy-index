@@ -105,7 +105,7 @@ export default function EmbedPage() {
           overflow: hidden;
         }
 
-        button {
+        button, select {
           font-family: elza, sans-serif !important;
         }
 
@@ -195,6 +195,41 @@ export default function EmbedPage() {
           cursor: pointer;
         }
 
+        .range-select-wrap {
+          display: none;
+        }
+
+        .range-select {
+          font-size: 12px;
+          font-weight: 600;
+          height: 32px;
+          padding: 0 34px 0 12px;
+          border-radius: 10px;
+          border: 0;
+          background: #000;
+          color: #fff;
+          appearance: none;
+          -webkit-appearance: none;
+          cursor: pointer;
+        }
+
+        .range-select-shell {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+        }
+
+        .range-select-shell::after {
+          content: "⌄";
+          position: absolute;
+          right: 11px;
+          top: 4px;
+          color: #fff;
+          font-size: 16px;
+          line-height: 1;
+          pointer-events: none;
+        }
+
         .chart-wrap {
           margin-top: 16px;
           flex: 1;
@@ -258,19 +293,14 @@ export default function EmbedPage() {
           }
 
           .pills {
-            width: 100%;
-            flex-wrap: wrap;
-            gap: 6px;
-            order: -1;
-            justify-content: flex-end;
+            display: none;
           }
 
-          .pill {
-            font-size: 11px;
-            height: 28px;
-            min-width: 45px;
-            padding: 7px 10px;
-            border-radius: 9px;
+          .range-select-wrap {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+            order: -1;
           }
 
           .chart-wrap {
@@ -326,6 +356,22 @@ export default function EmbedPage() {
                 </button>
               ))}
             </div>
+
+            <div className="range-select-wrap">
+              <div className="range-select-shell">
+                <select
+                  className="range-select"
+                  value={range}
+                  onChange={(e) => setRange(e.target.value as RangeKey)}
+                >
+                  {RANGE_OPTIONS.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           <div className="chart-wrap">
@@ -349,7 +395,7 @@ export default function EmbedPage() {
                   >
                     <Label
                       value={baselineLabel}
-                      position="insideTopRight"
+                      position="insideTopLeft"
                       offset={6}
                       fill="rgba(0,0,0,0.38)"
                       fontSize={9}
