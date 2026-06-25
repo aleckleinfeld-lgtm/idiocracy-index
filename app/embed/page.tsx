@@ -81,13 +81,14 @@ export default function EmbedPage() {
   const positive = change !== null && change >= 0;
   const lineColor = positive ? "#16a34a" : "#dc2626";
 
-  // ✅ Neutral fill (no green/red tint)
   const gradientTop = "rgba(0,0,0,0.04)";
 
   const baselineValue = useMemo(() => {
     const first = data.find((d) => typeof d.value === "number");
     return first?.value ?? null;
   }, [data]);
+
+  const baselineLabel = range === "1D" ? "Open" : "Range start";
 
   return (
     <>
@@ -106,7 +107,6 @@ export default function EmbedPage() {
         }
       `}</style>
 
-      {/* ✅ FULL WHITE BACKGROUND */}
       <div
         className="h-full w-full text-[#111]"
         style={{
@@ -116,9 +116,7 @@ export default function EmbedPage() {
       >
         <div className="flex h-full flex-col px-[18px] py-[18px]">
 
-          {/* TOP */}
           <div className="flex items-start justify-between gap-[20px]">
-
             <div>
               <h1 className="text-[18px] font-medium tracking-tight">
                 Idiocracy Index
@@ -154,7 +152,6 @@ export default function EmbedPage() {
               </div>
             </div>
 
-            {/* PILLS */}
             <div
               style={{
                 display: "flex",
@@ -187,7 +184,6 @@ export default function EmbedPage() {
             </div>
           </div>
 
-          {/* CHART */}
           <div className="mt-[16px] flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={data}>
@@ -206,6 +202,13 @@ export default function EmbedPage() {
                     y={baselineValue}
                     stroke="rgba(0,0,0,0.1)"
                     strokeDasharray="3 5"
+                    label={{
+                      value: baselineLabel,
+                      position: "right",
+                      fill: "rgba(0,0,0,0.35)",
+                      fontSize: 9,
+                      fontFamily: "elza, sans-serif",
+                    }}
                   />
                 )}
 
