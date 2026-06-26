@@ -233,7 +233,15 @@ export default function EmbedPage() {
           .pills-wrap {
             width: 100%;
             order: -1;
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            position: relative;
+          }
+
+          .pills-wrap::-webkit-scrollbar {
+            display: none;
           }
 
           .pills-wrap::after {
@@ -241,35 +249,29 @@ export default function EmbedPage() {
             position: absolute;
             top: 0;
             right: 0;
-            width: 42px;
+            width: 34px;
             height: 100%;
             pointer-events: none;
             background: linear-gradient(to right, rgba(255,255,255,0), #ffffff);
           }
 
           .pills {
-            width: 100%;
-            overflow-x: auto;
-            overflow-y: hidden;
+            display: flex;
+            width: max-content;
+            min-width: 100%;
+            overflow: visible;
             flex-wrap: nowrap;
-            gap: 8px;
-            padding-bottom: 2px;
-            padding-right: 46px;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
-          }
-
-          .pills::-webkit-scrollbar {
-            display: none;
+            gap: 6px;
+            padding-right: 38px;
           }
 
           .pill {
             flex: 0 0 auto;
-            font-size: 12px;
-            height: 32px;
-            min-width: 54px;
-            padding: 8px 13px;
-            border-radius: 12px;
+            font-size: 10px;
+            height: 26px;
+            min-width: 43px;
+            padding: 6px 10px;
+            border-radius: 9px;
           }
 
           .title {
