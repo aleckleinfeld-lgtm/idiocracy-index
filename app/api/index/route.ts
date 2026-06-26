@@ -183,30 +183,6 @@ function removeBadTail(points: SeriesPoint[]) {
   return cleaned;
 }
 
-function removeFlatTail(points: SeriesPoint[]) {
-  if (points.length < 3) return points;
-
-  const cleaned = [...points];
-
-  while (cleaned.length >= 3) {
-    const last = cleaned[cleaned.length - 1].value;
-    const prev = cleaned[cleaned.length - 2].value;
-
-    if (
-      typeof last === "number" &&
-      typeof prev === "number" &&
-      Math.abs(last - prev) < 0.005
-    ) {
-      cleaned.pop();
-      continue;
-    }
-
-    break;
-  }
-
-  return cleaned;
-}
-
 function findBaseValue(points: YahooPoint[]) {
   return points.find((p) => p.close > 0)?.close ?? null;
 }
@@ -215,12 +191,12 @@ function findLatestValue(points: YahooPoint[]) {
   return [...points].reverse().find((p) => p.close > 0)?.close ?? null;
 }
 
-function getLastKnownClose(points: YahooPoint[], timestamp: number) {
-  let last: number | null = null;
+function getLastKnownPoint(points: YahooPoint[], timestamp: number) {
+  let last: YahooPoint | null = null;
 
   for (const point of points) {
     if (point.timestamp <= timestamp) {
-      last = point.close;
+      last = point;
     } else {
       break;
     }
@@ -288,22 +264,33 @@ export async function GET(req: NextRequest) {
         let count = 0;
 
         for (let i = 0; i < rangeSeries.length; i += 1) {
-          const value = getLastKnownClose(rangeSeries[i], timestamp);
+          const point = getLastKnownPoint(rangeSeries[i], timestamp);
           const base = baseValues[i];
 
+          const maxStaleSeconds = range === "1D" ? 10 * 60 : Infinity;
+
+          const isFresh =
+            point && typeof point.timestamp === "number"
+              ? timestamp - point.timestamp <= maxStaleSeconds
+              : false;
+
           if (
-            typeof value === "number" &&
+            point &&
+            isFresh &&
+            typeof point.close === "number" &&
             typeof base === "number" &&
-            Number.isFinite(value) &&
+            Number.isFinite(point.close) &&
             Number.isFinite(base) &&
             base > 0
           ) {
-            total += value / base;
+            total += point.close / base;
             count += 1;
           }
         }
 
-        if (count < 2) return null;
+        const minimumCount = range === "1D" ? Math.ceil(rangeSeries.length * 0.7) : 2;
+
+        if (count < minimumCount) return null;
 
         return {
           date: new Date(timestamp * 1000).toISOString(),
@@ -314,8 +301,7 @@ export async function GET(req: NextRequest) {
       })
       .filter((point): point is SeriesPoint => point !== null);
 
-    const cleanedActualSeries =
-      range === "1D" ? removeFlatTail(removeBadTail(rawSeries)) : removeBadTail(rawSeries);
+    const cleanedActualSeries = removeBadTail(rawSeries);
 
     const firstRangeValue = cleanedActualSeries[0]?.value;
     const lastRangeValue = cleanedActualSeries[cleanedActualSeries.length - 1]?.value;
