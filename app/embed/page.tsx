@@ -105,7 +105,7 @@ export default function EmbedPage() {
           overflow: hidden;
         }
 
-        button, select {
+        button {
           font-family: elza, sans-serif !important;
         }
 
@@ -176,6 +176,10 @@ export default function EmbedPage() {
           line-height: 1.1;
         }
 
+        .pills-wrap {
+          position: relative;
+        }
+
         .pills {
           display: flex;
           flex-wrap: nowrap;
@@ -193,41 +197,6 @@ export default function EmbedPage() {
           line-height: 1;
           border: none;
           cursor: pointer;
-        }
-
-        .range-select-wrap {
-          display: none;
-        }
-
-        .range-select {
-          font-size: 12px;
-          font-weight: 600;
-          height: 32px;
-          padding: 0 34px 0 12px;
-          border-radius: 10px;
-          border: 0;
-          background: #000;
-          color: #fff;
-          appearance: none;
-          -webkit-appearance: none;
-          cursor: pointer;
-        }
-
-        .range-select-shell {
-          position: relative;
-          display: inline-flex;
-          align-items: center;
-        }
-
-        .range-select-shell::after {
-          content: "⌄";
-          position: absolute;
-          right: 11px;
-          top: 4px;
-          color: #fff;
-          font-size: 16px;
-          line-height: 1;
-          pointer-events: none;
         }
 
         .chart-wrap {
@@ -256,12 +225,52 @@ export default function EmbedPage() {
             padding: 22px 20px 18px;
           }
 
-  .top {
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
+          .top {
+            flex-direction: column;
+            gap: 16px;
+          }
+
+          .pills-wrap {
+            width: 100%;
+            order: -1;
+            overflow: hidden;
+          }
+
+          .pills-wrap::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 42px;
+            height: 100%;
+            pointer-events: none;
+            background: linear-gradient(to right, rgba(255,255,255,0), #ffffff);
+          }
+
+          .pills {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-wrap: nowrap;
+            gap: 8px;
+            padding-bottom: 2px;
+            padding-right: 46px;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+          }
+
+          .pills::-webkit-scrollbar {
+            display: none;
+          }
+
+          .pill {
+            flex: 0 0 auto;
+            font-size: 12px;
+            height: 32px;
+            min-width: 54px;
+            padding: 8px 13px;
+            border-radius: 12px;
+          }
 
           .title {
             font-size: 26px;
@@ -293,18 +302,6 @@ export default function EmbedPage() {
             line-height: 1.25;
             padding-bottom: 2px;
           }
-
-          .pills {
-            display: none;
-          }
-
-.range-select {
-  width: 72px;
-  height: 34px;
-  padding: 0 26px 0 12px;
-  font-size: 11px;
-  border-radius: 12px;
-}
 
           .chart-wrap {
             margin-top: 24px;
@@ -344,35 +341,21 @@ export default function EmbedPage() {
               </div>
             </div>
 
-            <div className="pills">
-              {RANGE_OPTIONS.map((r) => (
-                <button
-                  key={r}
-                  onClick={() => setRange(r)}
-                  className="pill"
-                  style={{
-                    background: r === range ? "#000" : "rgba(0,0,0,0.05)",
-                    color: r === range ? "#fff" : "rgba(0,0,0,0.6)",
-                  }}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
-
-            <div className="range-select-wrap">
-              <div className="range-select-shell">
-                <select
-                  className="range-select"
-                  value={range}
-                  onChange={(e) => setRange(e.target.value as RangeKey)}
-                >
-                  {RANGE_OPTIONS.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
+            <div className="pills-wrap">
+              <div className="pills">
+                {RANGE_OPTIONS.map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setRange(r)}
+                    className="pill"
+                    style={{
+                      background: r === range ? "#000" : "rgba(0,0,0,0.05)",
+                      color: r === range ? "#fff" : "rgba(0,0,0,0.6)",
+                    }}
+                  >
+                    {r}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
