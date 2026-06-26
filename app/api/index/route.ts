@@ -183,6 +183,30 @@ function removeBadTail(points: SeriesPoint[]) {
   return cleaned;
 }
 
+function removeFlatTail(points: SeriesPoint[]) {
+  if (points.length < 3) return points;
+
+  const cleaned = [...points];
+
+  while (cleaned.length >= 3) {
+    const last = cleaned[cleaned.length - 1].value;
+    const prev = cleaned[cleaned.length - 2].value;
+
+    if (
+      typeof last === "number" &&
+      typeof prev === "number" &&
+      Math.abs(last - prev) < 0.005
+    ) {
+      cleaned.pop();
+      continue;
+    }
+
+    break;
+  }
+
+  return cleaned;
+}
+
 function findBaseValue(points: YahooPoint[]) {
   return points.find((p) => p.close > 0)?.close ?? null;
 }
@@ -290,7 +314,8 @@ export async function GET(req: NextRequest) {
       })
       .filter((point): point is SeriesPoint => point !== null);
 
-    const cleanedActualSeries = removeBadTail(rawSeries);
+    const cleanedActualSeries =
+      range === "1D" ? removeFlatTail(removeBadTail(rawSeries)) : removeBadTail(rawSeries);
 
     const firstRangeValue = cleanedActualSeries[0]?.value;
     const lastRangeValue = cleanedActualSeries[cleanedActualSeries.length - 1]?.value;
